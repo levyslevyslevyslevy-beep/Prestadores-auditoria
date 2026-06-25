@@ -1,0 +1,3136 @@
+<!DOCTYPE html>
+<!-- saved from url=(0096)file:///C:/Users/depes.levy/Downloads/Dashboard%20%E2%80%93%20Prestadores%20Auditoria%20(1).html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – Prestadores Auditoria</title>
+<script>
+  // ===== Firebase Realtime Database (via REST) =====
+  const FB_BASE_URL = "https://prestadores-auditoria-default-rtdb.firebaseio.com/dashboard_v1";
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+<!-- Aplica tema salvo antes do render para evitar flash -->
+<script>
+  (function(){
+    var t = localStorage.getItem('dash_tema_v1') || 'dark';
+    if (t === 'light') document.documentElement.classList.add('light');
+  })();
+</script>
+<style>
+  /* ===== TEMA ESCURO (padrão) ===== */
+  :root {
+    --bg: #080d14;
+    --bg2: #0c1220;
+    --surface: #101827;
+    --surface2: #19253a;
+    --surface3: #1f2e45;
+    --border: #243448;
+    --border-bright: #2f4460;
+    --border-row: rgba(36,52,72,0.6);
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --gray: #64748b;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --shadow-card: rgba(0,0,0,0.6);
+    --shadow-modal: rgba(0,0,0,0.7);
+    --header-grad: linear-gradient(135deg, #080d14 0%, #0c1220 100%);
+    --legend-bg: rgba(8,13,20,0.6);
+    --glow-accent: rgba(59,130,246,0.15);
+    --radius: 14px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  /* ===== TEMA CLARO ===== */
+  :root.light {
+    --bg: #eef2f7;
+    --bg2: #e4eaf3;
+    --surface: #ffffff;
+    --surface2: #f0f4fa;
+    --surface3: #e8eef6;
+    --border: #c8d6e8;
+    --border-bright: #a8c0dc;
+    --border-row: rgba(150,180,220,0.3);
+    --accent: #2563eb;
+    --accent2: #0891b2;
+    --green: #059669;
+    --amber: #d97706;
+    --red: #dc2626;
+    --purple: #7c3aed;
+    --gray: #64748b;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --text-dim: #64748b;
+    --shadow-card: rgba(0,0,0,0.1);
+    --shadow-modal: rgba(0,0,0,0.25);
+    --header-grad: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+    --legend-bg: rgba(240,244,248,0.85);
+    --glow-accent: rgba(37,99,235,0.08);
+    --radius: 14px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  /* ===== TRANSIÇÃO GLOBAL ===== */
+  *, *::before, *::after {
+    transition: background-color 0.25s ease, border-color 0.25s ease,
+                color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+  }
+
+  /* ===== BOTÃO TEMA ===== */
+  .theme-btn {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text-dim); padding: 7px 14px; border-radius: 20px;
+    cursor: pointer; font-size: 12px; font-family: var(--font);
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 600; letter-spacing: 0.3px; transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--text); box-shadow: 0 0 12px var(--glow-accent); }
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--header-grad);
+    border-bottom: 1px solid var(--border);
+    padding: 0 36px; height: 64px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  }
+  .header::after {
+    content: ''; position: absolute; bottom: 0; left: 5%; right: 5%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), var(--purple), transparent);
+    opacity: 0.45;
+  }
+  .header-icon { font-size: 26px; filter: drop-shadow(0 0 8px rgba(59,130,246,0.5)); }
+  .header-left h1 {
+    font-size: 17px; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--text) 0%, var(--text-dim) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .header-left p { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .admin-btn {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text-dim); padding: 7px 16px; border-radius: 20px;
+    cursor: pointer; font-size: 12px; font-family: var(--font); font-weight: 600;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .admin-btn:hover { border-color: var(--accent); color: var(--text); box-shadow: 0 0 14px var(--glow-accent); }
+  .admin-btn.logged-in { border-color: var(--amber); color: var(--amber); background: rgba(245,158,11,0.08); box-shadow: 0 0 12px rgba(245,158,11,0.15); }
+  .admin-badge {
+    display: none; background: rgba(245,158,11,0.12); color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.35);
+    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(245,158,11,0.1);
+  }
+  .admin-badge.visible { display: block; }
+
+  /* ===== MAIN ===== */
+  .main { padding: 36px; max-width: 1440px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ===== SECTION LABEL ===== */
+  .section-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; font-weight: 800; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 20px;
+  }
+  .section-label::before {
+    content: ''; display: inline-block; width: 3px; height: 14px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    border-radius: 2px; box-shadow: 0 0 8px var(--accent); flex-shrink: 0;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border-bright), transparent);
+  }
+
+  /* REGIONAL CARDS */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 20px; margin-bottom: 44px;
+    perspective: 1000px;
+  }
+
+  .card-regional {
+    position: relative; overflow: hidden;
+    border-radius: 18px; padding: 26px 22px 22px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transform: translateY(0) rotateX(0deg);
+    transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s ease;
+
+    /* Fundo com gradiente escuro + borda sutil */
+    background: linear-gradient(145deg,
+      color-mix(in srgb, var(--card-accent, #3b82f6) 12%, var(--surface) 88%) 0%,
+      var(--surface) 60%
+    );
+    border: 1px solid color-mix(in srgb, var(--card-accent, #3b82f6) 35%, transparent 65%);
+    box-shadow:
+      0 2px 0 0 color-mix(in srgb, var(--card-accent, #3b82f6) 50%, transparent 50%),
+      0 6px 24px -4px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  /* Brilho superior (efeito vidro) */
+  .card-regional::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.07) 0%,
+      rgba(255,255,255,0) 100%
+    );
+    border-radius: 18px 18px 0 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Brilho de aresta colorida no topo */
+  .card-regional::after {
+    content: '';
+    position: absolute; top: 0; left: 10%; right: 10%; height: 2px;
+    background: linear-gradient(90deg,
+      transparent,
+      var(--card-accent, #3b82f6),
+      transparent
+    );
+    border-radius: 0 0 4px 4px;
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .card-regional:hover {
+    transform: translateY(-8px) rotateX(4deg);
+    box-shadow:
+      0 2px 0 0 color-mix(in srgb, var(--card-accent, #3b82f6) 70%, transparent 30%),
+      0 20px 48px -8px rgba(0,0,0,0.55),
+      0 0 32px -8px var(--card-accent, #3b82f6),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+    border-color: color-mix(in srgb, var(--card-accent, #3b82f6) 65%, transparent 35%);
+  }
+
+  .card-regional.active {
+    transform: translateY(-5px) rotateX(2deg);
+    box-shadow:
+      0 0 0 2px var(--card-accent, #3b82f6),
+      0 16px 40px -8px rgba(0,0,0,0.5),
+      0 0 40px -10px var(--card-accent, #3b82f6);
+    border-color: var(--card-accent, #3b82f6);
+  }
+
+  /* Conteúdo do card acima das pseudo-camadas */
+  .card-reg-inner { position: relative; z-index: 3; }
+
+  .card-reg-tag {
+    font-size: 26px; font-weight: 900; letter-spacing: 1px;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg,
+      #fff 10%,
+      var(--card-accent, #3b82f6) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--card-accent,#3b82f6) 60%, transparent 40%));
+  }
+
+  .card-reg-city {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--card-accent, #3b82f6) 80%, white 20%);
+    margin-bottom: 3px;
+    opacity: 0.85;
+  }
+
+  .card-reg-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  .card-reg-bars { display: flex; flex-direction: column; gap: 9px; }
+
+  .bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+
+  .bar-label-wrap { display: flex; align-items: center; gap: 4px; width: 60px; flex-shrink: 0; }
+  .bar-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .bar-label-txt { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+
+  .bar-track {
+    flex: 1; height: 5px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 99px; overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .bar-fill {
+    height: 100%; border-radius: 99px;
+    box-shadow: 0 0 6px currentColor;
+    transition: width 0.6s cubic-bezier(.22,.68,0,1.2);
+  }
+  .bar-val {
+    font-size: 11px; font-weight: 700; min-width: 20px;
+    text-align: right;
+  }
+
+  /* Tema claro: ajuste dos cards */
+  :root.light .card-regional {
+    background: linear-gradient(145deg,
+      color-mix(in srgb, var(--card-accent, #2563eb) 8%, #fff 92%) 0%,
+      #fff 60%
+    );
+    box-shadow:
+      0 2px 0 0 color-mix(in srgb, var(--card-accent, #2563eb) 40%, transparent 60%),
+      0 6px 24px -4px rgba(0,0,0,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+  :root.light .card-regional::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
+  }
+  :root.light .card-regional:hover {
+    box-shadow:
+      0 2px 0 0 color-mix(in srgb, var(--card-accent, #2563eb) 60%, transparent 40%),
+      0 16px 40px -8px rgba(0,0,0,0.18),
+      0 0 24px -8px var(--card-accent, #2563eb);
+  }
+  :root.light .card-reg-tag {
+    background: linear-gradient(135deg, #111 10%, var(--card-accent, #2563eb) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  :root.light .bar-track { background: rgba(0,0,0,0.07); box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--border-row) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-row) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%);
+  }
+
+  /* ===== FILTER BAR ===== */
+  .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-bar input {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text); padding: 9px 16px; border-radius: 22px;
+    font-size: 13px; width: 300px; outline: none; transition: all 0.2s;
+  }
+  .filter-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow-accent); }
+  .filter-bar input::placeholder { color: var(--text-muted); }
+  .filter-select {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text); padding: 9px 14px; border-radius: 22px;
+    font-size: 13px; outline: none; cursor: pointer; transition: all 0.2s;
+  }
+  .filter-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow-accent); }
+  .results-count { margin-left: auto; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  /* ===== TABLE PANEL ===== */
+  .table-panel {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius);
+    overflow: hidden; display: none;
+    box-shadow: 0 8px 48px var(--shadow-card);
+    animation: panelIn 0.35s cubic-bezier(.22,.68,0,1.2);
+  }
+  .table-panel.visible { display: block; }
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .panel-header {
+    padding: 18px 26px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(90deg, var(--surface2) 0%, var(--surface) 100%);
+  }
+  .panel-header h2 { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+  .panel-header .badge {
+    background: var(--accent); color: #fff;
+    padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    box-shadow: 0 0 10px rgba(59,130,246,0.4);
+  }
+  .close-btn {
+    margin-left: auto; background: none;
+    border: 1px solid var(--border-bright); color: var(--text-muted);
+    padding: 5px 14px; border-radius: 20px; cursor: pointer; font-size: 12px;
+    font-weight: 600; transition: all 0.15s;
+  }
+  .close-btn:hover { border-color: var(--red); color: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.2); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    background: var(--surface2); padding: 12px 18px;
+    text-align: left; font-size: 10px; font-weight: 800;
+    letter-spacing: 1px; color: var(--text-muted);
+    text-transform: uppercase; white-space: nowrap;
+    border-bottom: 1px solid var(--border-bright);
+    position: sticky; top: 0; z-index: 1;
+    cursor: pointer; user-select: none; transition: color 0.15s;
+  }
+  thead th:hover { color: var(--accent); }
+  thead th.sort-asc::after { content: ' ▲'; color: var(--accent); }
+  thead th.sort-desc::after { content: ' ▼'; color: var(--accent); }
+  tbody tr { border-bottom: 1px solid var(--border-row); transition: background 0.12s; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 11px 18px; vertical-align: middle; }
+  .td-prestador { font-weight: 600; max-width: 260px; line-height: 1.4; font-size: 13px; }
+  .td-cnpj { color: var(--text-muted); font-family: monospace; font-size: 11px; white-space: nowrap; }
+  .td-peg { color: var(--accent2); font-size: 11.5px; font-weight: 600; }
+
+  /* ===== STATUS PILLS ===== */
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; white-space: nowrap; letter-spacing: 0.3px;
+  }
+  .pill::before { content: '●'; font-size: 7px; }
+  .pill-loco  { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); box-shadow: 0 0 8px rgba(16,185,129,0.1); }
+  .pill-banco { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); box-shadow: 0 0 8px rgba(245,158,11,0.1); }
+  .pill-x     { background: rgba(100,116,139,0.1); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+  .pill-sim   { background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); box-shadow: 0 0 8px rgba(59,130,246,0.1); }
+  .pill-nao   { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .pill-vazio { color: var(--text-muted); font-style: italic; font-size: 10.5px; }
+
+  /* ===== EDITABLE ===== */
+  .editable { min-width: 60px; cursor: text; border-radius: 6px; padding: 2px 6px; border: 1px solid transparent; }
+  .editable:hover { border-color: var(--border-bright); background: var(--surface2); }
+  .editable:focus { border-color: var(--accent); outline: none; background: var(--surface3); box-shadow: 0 0 0 3px var(--glow-accent); }
+
+  /* ===== LEGEND ===== */
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 26px; border-top: 1px solid var(--border); background: var(--legend-bg); }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+  /* ===== SAVE INDICATOR ===== */
+  .save-indicator {
+    display: none; position: fixed; bottom: 28px; right: 28px;
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: #fff; padding: 12px 22px; border-radius: 12px;
+    font-size: 13px; font-weight: 700;
+    box-shadow: 0 4px 24px rgba(16,185,129,0.4), 0 0 0 1px rgba(16,185,129,0.3);
+    z-index: 2000; animation: savePopIn 0.3s cubic-bezier(.22,.68,0,1.4);
+  }
+  @keyframes savePopIn { from { opacity:0; transform:translateY(12px) scale(0.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+  /* ===== LOGIN MODAL ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+    z-index: 3000; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    border-radius: 20px; padding: 44px; width: 100%; max-width: 400px;
+    box-shadow: 0 32px 80px var(--shadow-modal), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: modalIn 0.3s cubic-bezier(.22,.68,0,1.2);
+  }
+  @keyframes modalIn { from { transform: translateY(-20px) scale(0.95); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-icon { font-size: 40px; margin-bottom: 14px; text-align: center; filter: drop-shadow(0 0 12px rgba(59,130,246,0.5)); }
+  .modal-box h2 { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .modal-box p { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 28px; }
+  .modal-field { margin-bottom: 16px; }
+  .modal-field label { display: block; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
+  .modal-field input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text); padding: 11px 16px; border-radius: 10px;
+    font-size: 14px; outline: none; font-family: var(--font); transition: all 0.2s;
+  }
+  .modal-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow-accent); }
+  .modal-error { color: #f87171; font-size: 12px; margin-bottom: 14px; display: none; text-align: center; font-weight: 600; }
+  .modal-error.show { display: block; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .btn-primary {
+    flex: 1; background: linear-gradient(135deg, var(--accent), #1d4ed8); color: #fff; border: none;
+    padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: var(--font); transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+  }
+  .btn-primary:hover { box-shadow: 0 6px 24px rgba(59,130,246,0.5); transform: translateY(-1px); }
+  .btn-secondary {
+    background: none; border: 1px solid var(--border-bright); color: var(--text-muted);
+    padding: 12px 18px; border-radius: 10px; font-size: 14px;
+    cursor: pointer; font-family: var(--font); transition: all 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+
+  /* ===== ADMIN PANEL ===== */
+  .admin-panel {
+    display: none; background: var(--surface);
+    border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius);
+    margin-bottom: 36px; overflow: hidden;
+    box-shadow: 0 4px 32px rgba(245,158,11,0.06);
+  }
+  .admin-panel.visible { display: block; animation: panelIn 0.3s cubic-bezier(.22,.68,0,1.2); }
+  .admin-panel-header {
+    background: linear-gradient(90deg, rgba(245,158,11,0.08), transparent);
+    border-bottom: 1px solid rgba(245,158,11,0.2);
+    padding: 16px 26px; display: flex; align-items: center; gap: 12px;
+  }
+  .admin-panel-header h2 { font-size: 14px; font-weight: 800; color: var(--amber); letter-spacing: -0.2px; }
+  .admin-panel-header span { font-size: 12px; color: var(--text-muted); }
+  .admin-close {
+    margin-left: auto; background: none;
+    border: 1px solid rgba(245,158,11,0.3); color: var(--amber);
+    padding: 5px 14px; border-radius: 20px; cursor: pointer; font-size: 12px;
+    font-family: var(--font); font-weight: 600; transition: all 0.15s;
+  }
+  .admin-close:hover { background: rgba(245,158,11,0.1); box-shadow: 0 0 10px rgba(245,158,11,0.2); }
+  .admin-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .admin-tab {
+    padding: 13px 22px; font-size: 12px; font-weight: 700; cursor: pointer;
+    color: var(--text-muted); border-bottom: 2px solid transparent;
+    transition: all 0.15s; background: none;
+    border-left: none; border-right: none; border-top: none;
+    font-family: var(--font); letter-spacing: 0.2px;
+  }
+  .admin-tab:hover { color: var(--text); background: var(--surface3); }
+  .admin-tab.active { color: var(--amber); border-bottom-color: var(--amber); background: var(--surface); }
+  .admin-content { padding: 26px; }
+  .admin-section { display: none; }
+  .admin-section.active { display: block; }
+
+  .admin-select-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .admin-select-row select {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text); padding: 9px 14px; border-radius: 10px;
+    font-size: 13px; outline: none; cursor: pointer; font-family: var(--font); min-width: 180px;
+  }
+  .admin-select-row select:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+  .admin-form { display: none; }
+  .admin-form.visible { display: block; }
+  .admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .admin-form-full { grid-column: 1 / -1; }
+  .form-field label { display: block; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .form-field input, .form-field select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border-bright);
+    color: var(--text); padding: 9px 13px; border-radius: 10px;
+    font-size: 13px; outline: none; font-family: var(--font); transition: all 0.15s;
+  }
+  .form-field input:focus, .form-field select:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-save {
+    background: linear-gradient(135deg, var(--amber), #d97706); color: #000; border: none;
+    padding: 10px 24px; border-radius: 10px; font-size: 13px; font-weight: 800;
+    cursor: pointer; font-family: var(--font); transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(245,158,11,0.3);
+  }
+  .btn-save:hover { box-shadow: 0 5px 20px rgba(245,158,11,0.45); transform: translateY(-1px); }
+  .btn-del {
+    background: rgba(239,68,68,0.08); color: #f87171;
+    border: 1px solid rgba(239,68,68,0.25); padding: 10px 18px; border-radius: 10px;
+    font-size: 13px; cursor: pointer; font-family: var(--font); transition: all 0.15s; font-weight: 600;
+  }
+  .btn-del:hover { background: rgba(239,68,68,0.15); box-shadow: 0 0 12px rgba(239,68,68,0.2); }
+  .btn-cancel {
+    background: none; border: 1px solid var(--border-bright); color: var(--text-muted);
+    padding: 10px 18px; border-radius: 10px; font-size: 13px; cursor: pointer;
+    font-family: var(--font); font-weight: 600; transition: all 0.15s;
+  }
+  .btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .config-card { background: var(--surface2); border: 1px solid var(--border-bright); border-radius: 12px; padding: 20px; }
+  .config-card h3 { font-size: 11px; font-weight: 800; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .config-field { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border-row); font-size: 13px; font-weight: 500; }
+  .config-field:last-child { border-bottom: none; }
+  .config-field input[type=text] {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    color: var(--text); padding: 5px 10px; border-radius: 7px;
+    font-size: 12px; width: 160px; outline: none; font-family: var(--font);
+  }
+  .config-field input[type=color] { width: 36px; height: 28px; border: none; background: none; cursor: pointer; border-radius: 4px; }
+
+  .admin-log {
+    background: var(--bg2, var(--surface2)); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; max-height: 200px; overflow-y: auto;
+    font-size: 11.5px; font-family: monospace; color: var(--text-muted);
+  }
+  .log-entry { padding: 3px 0; border-bottom: 1px solid var(--border-row); }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: var(--accent2); margin-right: 8px; }
+  .log-action { color: var(--green); font-weight: 700; }
+
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border-row); }
+  .toggle-row:last-child { border-bottom:none; }
+  .toggle-row-left { display:flex; align-items:center; gap:10px; }
+  .toggle-switch { position:relative; width:42px; height:24px; flex-shrink:0; }
+  .toggle-switch input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:24px; cursor:pointer; transition:background 0.2s; }
+  .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+  .toggle-switch input:checked + .toggle-slider { background:var(--green); box-shadow:0 0 8px rgba(16,185,129,0.4); }
+  .toggle-switch input:checked + .toggle-slider::before { transform:translateX(18px); }
+  .toggle-label { font-size:13px; font-weight:600; }
+  .toggle-sub { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .toggle-hidden-badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; background:rgba(239,68,68,0.12); color:#f87171; }
+
+  .new-reg-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .reg-remove-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-row); font-size: 13px; font-weight: 500; }
+  .reg-remove-row:last-child { border-bottom: none; }
+  .reg-remove-info { display: flex; align-items: center; gap: 10px; }
+  .reg-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+  .users-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .user-card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; transition: all 0.15s;
+  }
+  .user-card:hover { border-color: var(--amber); box-shadow: 0 0 12px rgba(245,158,11,0.1); }
+  .user-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; background:var(--surface3); border:2px solid var(--border-bright); }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 700; }
+  .user-login { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .user-meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+  .user-pill { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+  .pill-admin  { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+  .pill-editor { background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+  .pill-vis    { background: rgba(100,116,139,0.1); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+  .pill-ativo  { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+  .pill-inativo{ background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .user-actions { display: flex; gap: 6px; }
+  .user-btn { background: none; border: 1px solid var(--border-bright); color: var(--text-muted); padding: 5px 12px; border-radius: 8px; font-size: 11px; cursor: pointer; font-family: var(--font); font-weight: 600; transition: all 0.15s; }
+  .user-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .user-btn.del:hover { border-color: #f87171; color: #f87171; }
+  .user-empty { text-align:center; padding:32px; color:var(--text-muted); font-size:13px; }
+  .user-edit-form { background: var(--surface2); border: 1px solid var(--amber); border-radius: 12px; padding: 18px; margin-bottom: 10px; box-shadow: 0 0 16px rgba(245,158,11,0.08); }
+  .user-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+  .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:4000; align-items:center; justify-content:center; }
+  .confirm-overlay.open { display:flex; }
+  .confirm-box { background:var(--surface); border:1px solid var(--border-bright); border-radius:16px; padding:32px; max-width:360px; text-align:center; box-shadow:0 20px 60px var(--shadow-modal); animation:modalIn 0.25s cubic-bezier(.22,.68,0,1.2); }
+  .confirm-box h3 { font-size:16px; margin-bottom:8px; font-weight:800; }
+  .confirm-box p { font-size:13px; color:var(--text-muted); margin-bottom:22px; }
+  .confirm-actions { display:flex; gap:10px; justify-content:center; }
+
+  .add-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .add-form-full { grid-column: 1 / -1; }
+
+  /* ===== OVERRIDES TEMA CLARO ===== */
+  :root.light body { background-image: linear-gradient(rgba(150,180,220,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(150,180,220,0.15) 1px, transparent 1px); }
+  :root.light .modal-overlay { background: rgba(0,0,0,0.4); }
+  :root.light .confirm-overlay { background: rgba(0,0,0,0.3); }
+  :root.light .admin-panel { border-color: rgba(217,119,6,0.35); }
+  :root.light .admin-panel-header { background: rgba(217,119,6,0.06); border-bottom-color: rgba(217,119,6,0.2); }
+  :root.light .pill-loco  { background: rgba(5,150,105,0.1); border-color: rgba(5,150,105,0.25); }
+  :root.light .pill-banco { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.25); }
+  :root.light .pill-x     { background: rgba(100,116,139,0.1); color: #475569; }
+  :root.light .pill-sim   { background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.25); }
+  :root.light .pill-nao   { background: rgba(220,38,38,0.08); color: #dc2626; }
+  :root.light .toggle-hidden-badge { background: rgba(220,38,38,0.1); color: #dc2626; }
+  :root.light .card-reg-tag { background: linear-gradient(135deg, #111 10%, var(--card-accent, #2563eb) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  :root.light .card-regional { background: linear-gradient(145deg, color-mix(in srgb, var(--card-accent, #2563eb) 8%, #fff 92%) 0%, #fff 60%); box-shadow: 0 2px 0 0 color-mix(in srgb, var(--card-accent, #2563eb) 40%, transparent 60%), 0 6px 24px -4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root.light .card-regional:hover { box-shadow: 0 2px 0 0 color-mix(in srgb, var(--card-accent, #2563eb) 60%, transparent 40%), 0 16px 40px -8px rgba(0,0,0,0.15), 0 0 24px -8px var(--card-accent, #2563eb); }
+  :root.light .bar-track { background: rgba(0,0,0,0.07); box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  :root.light select option { background: var(--surface); color: var(--text); }
+  /* ===== SPACE BACKGROUND ===== */
+  #spaceCanvas {
+    position: fixed; inset: 0; z-index: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+  }
+  #spaceCanvas.hidden { opacity: 0; }
+
+  /* Garante que o main fica sobre o canvas */
+  .main { position: relative; z-index: 1; }
+
+  /* ===== ESTRELA CADENTE ===== */
+  #shootingStarCanvas {
+    display: none;
+    position: fixed; inset: 0; z-index: 9000;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  #shootingStarCanvas.active { display: block; }
+
+  .star-flash {
+    position: fixed; inset: 0; z-index: 9001;
+    background: #fff; opacity: 0; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">🏥</div>
+  <div class="header-left">
+    <h1>Consulta de Prestadores e Auditoria</h1>
+    <p>Clique em uma regional para visualizar os prestadores</p>
+  </div>
+  <div class="header-right">
+    <span id="fonteBadge" style="display:none;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-muted)">💾 Local</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTema()" title="Alternar tema claro/escuro">
+      <span id="themeIcon">☀️</span><span id="themeLabel">Tema Claro</span>
+    </button>
+    <span class="admin-badge" id="adminBadge">⚙ ADMIN · Administrador</span>
+    <button class="admin-btn" id="adminBtn" onclick="handleAdminClick()">🔐 Área do Administrador</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<!-- SPACE BACKGROUND -->
+<canvas id="spaceCanvas"></canvas>
+
+<div class="main">
+
+  <!-- ADMIN PANEL -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-panel-header">
+      <div>
+        <h2>⚙ Painel do Administrador</h2>
+        <span>Edite todas as informações do dashboard</span>
+      </div>
+      <button class="admin-close" onclick="logoutAdmin()">✕ Sair da área admin</button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab" onclick="showAdminTab(&#39;edit&#39;)">✏ Editar Prestador</button>
+      <button class="admin-tab" onclick="showAdminTab(&#39;add&#39;)">➕ Adicionar Prestador</button>
+      <button class="admin-tab active" onclick="showAdminTab(&#39;config&#39;)">🎨 Configurações</button>
+      <button class="admin-tab" onclick="showAdminTab(&#39;users&#39;)">👥 Usuários</button>
+      <button class="admin-tab" onclick="showAdminTab(&#39;log&#39;)">📋 Log de Alterações</button>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- TAB: EDITAR -->
+      <div class="admin-section" id="tab-edit">
+        <div class="admin-select-row">
+          <select id="editRegional" onchange="loadEditPrestadores()"><option value="">Selecione a Regional…</option><option value="ADCUR">ADCUR — Curitiba</option><option value="ADFOR">ADFOR — Fortaleza</option><option value="ADPAL">ADPAL — Porto Alegre</option><option value="ADREC">ADREC — Recife</option><option value="ADRJA">ADRJA — Rio de Janeiro</option><option value="ADSPA">ADSPA — São Paulo</option></select>
+          <select id="editPrestador" onchange="loadEditForm()"><option value="">Selecione o Prestador…</option></select>
+        </div>
+        <div class="admin-form" id="editForm">
+          <div class="admin-form-grid">
+            <div class="form-field admin-form-full">
+              <label>Nome do Prestador</label>
+              <input type="text" id="ef_prestador">
+            </div>
+            <div class="form-field">
+              <label>CNPJ</label>
+              <input type="text" id="ef_cnpj">
+            </div>
+            <div class="form-field">
+              <label>Regional</label>
+              <select id="ef_regional"><option value="ADCUR">ADCUR — Curitiba</option><option value="ADFOR">ADFOR — Fortaleza</option><option value="ADPAL">ADPAL — Porto Alegre</option><option value="ADREC">ADREC — Recife</option><option value="ADRJA">ADRJA — Rio de Janeiro</option><option value="ADSPA">ADSPA — São Paulo</option></select>
+            </div>
+            <div class="form-field">
+              <label>Pronto Socorro</label>
+              <select id="ef_pronto_socorro"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+            </div>
+            <div class="form-field">
+              <label>Internação</label>
+              <select id="ef_internacao"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+            </div>
+            <div class="form-field">
+              <label>Ambulatorial</label>
+              <select id="ef_ambulatorial2"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+            </div>
+            <div class="form-field">
+              <label>Fisioterapia</label>
+              <select id="ef_fisioterapia"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+            </div>
+            <div class="form-field admin-form-full">
+              <label>PEG</label>
+              <input type="text" id="ef_peg">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-save" onclick="saveEditForm()">💾 Salvar Alterações</button>
+            <button class="btn-del" onclick="confirmDelete()">🗑 Excluir Prestador</button>
+            <button class="btn-cancel" onclick="clearEditForm()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ADICIONAR -->
+      <div class="admin-section" id="tab-add">
+        <div class="add-form-grid">
+          <div class="form-field add-form-full">
+            <label>Nome do Prestador</label>
+            <input type="text" id="af_prestador" placeholder="Nome completo do prestador">
+          </div>
+          <div class="form-field">
+            <label>CNPJ</label>
+            <input type="text" id="af_cnpj" placeholder="00000000000000">
+          </div>
+          <div class="form-field">
+            <label>Regional</label>
+            <select id="af_regional"><option value="">Selecione…</option><option value="ADCUR">ADCUR — Curitiba</option><option value="ADFOR">ADFOR — Fortaleza</option><option value="ADPAL">ADPAL — Porto Alegre</option><option value="ADREC">ADREC — Recife</option><option value="ADRJA">ADRJA — Rio de Janeiro</option><option value="ADSPA">ADSPA — São Paulo</option></select>
+          </div>
+          <div class="form-field">
+            <label>Pronto Socorro</label>
+            <select id="af_pronto_socorro"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+          </div>
+          <div class="form-field">
+            <label>Internação</label>
+            <select id="af_internacao"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+          </div>
+          <div class="form-field">
+            <label>Ambulatorial</label>
+            <select id="af_ambulatorial2"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+          </div>
+          <div class="form-field">
+            <label>Fisioterapia</label>
+            <select id="af_fisioterapia"><option value="">—</option><option>AUDITADO IN LOCO</option><option>AUDITAR NO BANCO</option><option>XXXXXXXXXXXXXXXXX</option><option>SIM</option><option>NÃO</option></select>
+          </div>
+          <div class="form-field add-form-full">
+            <label>PEG</label>
+            <input type="text" id="af_peg" placeholder="Número(s) PEG">
+          </div>
+        </div>
+        <div class="form-actions" style="margin-top:20px">
+          <button class="btn-save" onclick="addPrestador()">➕ Adicionar Prestador</button>
+          <button class="btn-cancel" onclick="clearAddForm()">Limpar</button>
+        </div>
+      </div>
+
+      <!-- TAB: CONFIG -->
+      <div class="admin-section active" id="tab-config">
+        <div class="config-grid">
+          <div class="config-card">
+            <h3>🏷 Nomes das Regionais</h3>
+            <div id="configLabels"><div class="config-field"><span>ADCUR</span><input type="text" id="lbl_ADCUR" value="Curitiba"></div><div class="config-field"><span>ADFOR</span><input type="text" id="lbl_ADFOR" value="Fortaleza"></div><div class="config-field"><span>ADPAL</span><input type="text" id="lbl_ADPAL" value="Porto Alegre"></div><div class="config-field"><span>ADREC</span><input type="text" id="lbl_ADREC" value="Recife"></div><div class="config-field"><span>ADRJA</span><input type="text" id="lbl_ADRJA" value="Rio de Janeiro"></div><div class="config-field"><span>ADSPA</span><input type="text" id="lbl_ADSPA" value="São Paulo"></div></div>
+            <div class="form-actions" style="margin-top:14px">
+              <button class="btn-save" onclick="saveLabels()">💾 Salvar Nomes</button>
+            </div>
+          </div>
+          <div class="config-card">
+            <h3>🎨 Cores das Regionais</h3>
+            <div id="configColors"><div class="config-field"><span>ADCUR</span><input type="color" id="col_ADCUR" value="#3b82f6"></div><div class="config-field"><span>ADFOR</span><input type="color" id="col_ADFOR" value="#06b6d4"></div><div class="config-field"><span>ADPAL</span><input type="color" id="col_ADPAL" value="#8b5cf6"></div><div class="config-field"><span>ADREC</span><input type="color" id="col_ADREC" value="#f59e0b"></div><div class="config-field"><span>ADRJA</span><input type="color" id="col_ADRJA" value="#10b981"></div><div class="config-field"><span>ADSPA</span><input type="color" id="col_ADSPA" value="#ef4444"></div></div>
+            <div class="form-actions" style="margin-top:14px">
+              <button class="btn-save" onclick="saveColors()">💾 Salvar Cores</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nova Regional -->
+        <div class="config-card" style="margin-top:20px">
+          <h3>➕ Adicionar Nova Regional</h3>
+          <div class="new-reg-grid">
+            <div class="form-field">
+              <label>Código da Regional <span style="color:var(--text-muted);font-weight:400;text-transform:none">(ex: ADBSB)</span></label>
+              <input type="text" id="nr_codigo" placeholder="Ex: ADBSB" maxlength="10" style="text-transform:uppercase">
+            </div>
+            <div class="form-field">
+              <label>Nome da Cidade / Regional</label>
+              <input type="text" id="nr_nome" placeholder="Ex: Brasília">
+            </div>
+            <div class="form-field">
+              <label>Cor do Card</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <input type="color" id="nr_cor" value="#6366f1" style="width:48px;height:36px;border:none;background:none;cursor:pointer;border-radius:6px">
+                <span id="nr_cor_preview" style="font-size:12px;color:var(--text-muted)">#6366f1</span>
+              </div>
+            </div>
+          </div>
+          <div id="newRegError" style="color:#f87171;font-size:12px;margin-top:8px;display:none"></div>
+          <div class="form-actions" style="margin-top:16px">
+            <button class="btn-save" onclick="addNovaRegional()">➕ Criar Regional</button>
+            <button class="btn-cancel" onclick="limparNovaRegional()">Limpar</button>
+          </div>
+        </div>
+
+        <!-- Lista para remover regionais -->
+        <div class="config-card" style="margin-top:20px">
+          <h3>🗑 Remover Regional</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Atenção: remover uma regional exclui todos os prestadores vinculados a ela.</p>
+          <div id="regRemoveList"><div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:#3b82f6"></div>
+        <div>
+          <span style="font-weight:600">ADCUR</span>
+          <span style="color:var(--text-muted);margin-left:8px">Curitiba</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">24 prestadores</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional(&#39;ADCUR&#39;)">🗑 Remover</button>
+    </div><div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:#06b6d4"></div>
+        <div>
+          <span style="font-weight:600">ADFOR</span>
+          <span style="color:var(--text-muted);margin-left:8px">Fortaleza</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">17 prestadores</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional(&#39;ADFOR&#39;)">🗑 Remover</button>
+    </div><div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:#8b5cf6"></div>
+        <div>
+          <span style="font-weight:600">ADPAL</span>
+          <span style="color:var(--text-muted);margin-left:8px">Porto Alegre</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">11 prestadores</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional(&#39;ADPAL&#39;)">🗑 Remover</button>
+    </div><div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:#f59e0b"></div>
+        <div>
+          <span style="font-weight:600">ADREC</span>
+          <span style="color:var(--text-muted);margin-left:8px">Recife</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">21 prestadores</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional(&#39;ADREC&#39;)">🗑 Remover</button>
+    </div><div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:#10b981"></div>
+        <div>
+          <span style="font-weight:600">ADRJA</span>
+          <span style="color:var(--text-muted);margin-left:8px">Rio de Janeiro</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">6 prestadores</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional(&#39;ADRJA&#39;)">🗑 Remover</button>
+    </div><div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:#ef4444"></div>
+        <div>
+          <span style="font-weight:600">ADSPA</span>
+          <span style="color:var(--text-muted);margin-left:8px">São Paulo</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">28 prestadores</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional(&#39;ADSPA&#39;)">🗑 Remover</button>
+    </div></div>
+        </div>
+
+        <!-- Ocultar/Exibir cards -->
+        <div class="config-card" style="margin-top:20px">
+          <h3>👁 Visibilidade dos Cards</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Oculte ou exiba cards de regionais no dashboard sem excluir os dados.</p>
+          <div id="regVisibilityList"><div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:#3b82f6;width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ADCUR
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">Curitiba</span>
+            
+          </div>
+          <div class="toggle-sub">24 prestadores</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="Ocultar card">
+        <input type="checkbox" checked="" onchange="toggleRegVisibility(&#39;ADCUR&#39;, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div><div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:#06b6d4;width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ADFOR
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">Fortaleza</span>
+            
+          </div>
+          <div class="toggle-sub">17 prestadores</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="Ocultar card">
+        <input type="checkbox" checked="" onchange="toggleRegVisibility(&#39;ADFOR&#39;, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div><div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:#8b5cf6;width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ADPAL
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">Porto Alegre</span>
+            
+          </div>
+          <div class="toggle-sub">11 prestadores</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="Ocultar card">
+        <input type="checkbox" checked="" onchange="toggleRegVisibility(&#39;ADPAL&#39;, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div><div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:#f59e0b;width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ADREC
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">Recife</span>
+            
+          </div>
+          <div class="toggle-sub">21 prestadores</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="Ocultar card">
+        <input type="checkbox" checked="" onchange="toggleRegVisibility(&#39;ADREC&#39;, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div><div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:#10b981;width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ADRJA
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">Rio de Janeiro</span>
+            
+          </div>
+          <div class="toggle-sub">6 prestadores</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="Ocultar card">
+        <input type="checkbox" checked="" onchange="toggleRegVisibility(&#39;ADRJA&#39;, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div><div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:#ef4444;width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ADSPA
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">São Paulo</span>
+            
+          </div>
+          <div class="toggle-sub">28 prestadores</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="Ocultar card">
+        <input type="checkbox" checked="" onchange="toggleRegVisibility(&#39;ADSPA&#39;, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div></div>
+        </div>
+      </div>
+
+      <!-- CARD: SINCRONIZAÇÃO FIREBASE -->
+      <div class="config-card" style="margin-top:20px;border:1px solid color-mix(in srgb,#f97316 35%,transparent)">
+        <h3>🔥 Sincronização Firebase</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">
+          Todas as alterações do administrador são <strong>publicadas automaticamente</strong> e ficam
+          visíveis para todos os usuários em até 20 segundos. Use o botão abaixo apenas para forçar uma
+          republicação imediata.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-save" onclick="publicarFirebase()" style="background:linear-gradient(135deg,#f97316,#ea580c)">
+            🚀 Forçar Publicação Agora
+          </button>
+          <button class="btn-cancel" onclick="testarConexaoFirebase()">
+            🔌 Testar Conexão
+          </button>
+        </div>
+        <div id="fbDiag" style="margin-top:14px;font-size:12px;line-height:1.6;display:none;padding:12px 14px;border-radius:8px"></div>
+      </div>
+
+      <!-- CARD: EXPORTAR DADOS -->
+      <div class="config-card" style="margin-top:20px;border:1px solid color-mix(in srgb,#10b981 35%,transparent)">
+        <h3>📥 Exportar Dados</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">
+          Baixa todos os prestadores de todas as regionais. O <strong>Excel</strong> gera uma aba por
+          regional; o <strong>CSV</strong> gera um arquivo único com a coluna Regional.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-save" onclick="exportarExcel()" style="background:linear-gradient(135deg,#10b981,#059669)">
+            📊 Baixar Excel (.xlsx)
+          </button>
+          <button class="btn-save" onclick="exportarCSV()" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">
+            📄 Baixar CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB: USUÁRIOS -->
+      <div class="admin-section" id="tab-users">
+        <div class="users-layout">
+
+          <!-- Cadastrar novo usuário -->
+          <div class="config-card" style="margin-bottom:20px">
+            <h3>➕ Cadastrar Novo Usuário</h3>
+            <div class="users-form-grid">
+              <div class="form-field">
+                <label>Nome completo</label>
+                <input type="text" id="nu_nome" placeholder="Ex: João Silva">
+              </div>
+              <div class="form-field">
+                <label>Login</label>
+                <input type="text" id="nu_login" placeholder="Ex: joao.silva" autocomplete="off">
+              </div>
+              <div class="form-field">
+                <label>Senha</label>
+                <input type="password" id="nu_senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+              </div>
+              <div class="form-field">
+                <label>Confirmar Senha</label>
+                <input type="password" id="nu_senha2" placeholder="Repita a senha">
+              </div>
+              <div class="form-field">
+                <label>Perfil</label>
+                <select id="nu_perfil">
+                  <option value="visualizador">👁 Visualizador — só leitura</option>
+                  <option value="editor">✏ Editor — edita prestadores</option>
+                  <option value="admin">⚙ Administrador — acesso total</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Status</label>
+                <select id="nu_status">
+                  <option value="ativo">✅ Ativo</option>
+                  <option value="inativo">🚫 Inativo</option>
+                </select>
+              </div>
+            </div>
+            <div id="userFormError" style="color:#f87171;font-size:12px;margin-top:10px;display:none"></div>
+            <div class="form-actions" style="margin-top:16px">
+              <button class="btn-save" onclick="cadastrarUsuario()">💾 Cadastrar Usuário</button>
+              <button class="btn-cancel" onclick="limparFormUsuario()">Limpar</button>
+            </div>
+          </div>
+
+          <!-- Lista de usuários -->
+          <div class="config-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h3 style="margin-bottom:0">👥 Usuários Cadastrados</h3>
+              <input type="text" id="userSearch" placeholder="🔍 Buscar usuário…" oninput="renderUserList()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;font-size:12px;outline:none;width:200px;font-family:var(--font)">
+            </div>
+            <div id="userList">
+      <div class="user-card">
+        <div class="user-avatar" style="border-color:var(--green)">
+          ⚙
+        </div>
+        <div class="user-info">
+          <div class="user-name">Administrador</div>
+          <div class="user-login">@Credenciado · cadastrado em Sistema</div>
+          <div class="user-meta">
+            <span class="user-pill pill-admin">⚙ Administrador</span>
+            <span class="user-pill pill-ativo">✅ Ativo</span>
+          </div>
+        </div>
+        <div class="user-actions">
+          <button class="user-btn" onclick="startEditUser(1)">✏ Editar</button>
+          
+        </div>
+      </div></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB: LOG -->
+      <div class="admin-section" id="tab-log">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:13px;color:var(--text-muted)">Histórico de alterações desta sessão</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-cancel" onclick="clearLog()" style="font-size:11px;padding:5px 12px;">🗑 Limpar log</button>
+            <button class="btn-del" onclick="resetarDados()" style="font-size:11px;padding:5px 14px;" title="Apaga todas as edições salvas e restaura os dados originais">↩ Restaurar dados originais</button>
+          </div>
+        </div>
+        <div class="admin-log" id="adminLog"><div class="log-entry" style="color:var(--text-muted);font-style:italic">Nenhuma alteração registrada ainda.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="section-label">Regionais</div>
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <!-- TABLE PANEL -->
+  <div class="table-panel" id="tablePanel">
+    <div class="panel-header">
+      <h2 id="panelTitle" style="color: rgb(239, 68, 68);">ADSPA — São Paulo</h2>
+      <span class="badge" id="panelBadge" style="background: rgb(239, 68, 68);">28</span>
+      <button class="close-btn" onclick="closePanel()">✕ Fechar</button>
+    </div>
+    <div class="filter-bar" style="padding: 14px 24px 0;">
+      <input type="text" id="searchInput" placeholder="🔍  Buscar por nome do prestador ou CNPJ…" oninput="renderTable()">
+      <select class="filter-select" id="filterCol" onchange="onFilterColChange()">
+        <option value="">Filtrar coluna…</option>
+        <option value="pronto_socorro">Pronto Socorro</option>
+        <option value="internacao">Internação</option>
+        <option value="ambulatorial2">Ambulatorial</option>
+        <option value="fisioterapia">Fisioterapia</option>
+      </select>
+      <select class="filter-select" id="filterVal" onchange="renderTable()" style="display: none;"><option value="">Todos os status</option><option value="AUDITADO IN LOCO">Auditado In Loco</option><option value="AUDITAR NO BANCO">Auditar no Banco</option><option value="X">–</option></select>
+      <span class="results-count" id="resultsCount">28 de 28 registros</span>
+    </div>
+    <div class="table-wrap" style="max-height: 520px; overflow-y: auto; margin-top: 14px;">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy(&#39;prestador&#39;)">Prestador</th>
+            <th onclick="sortBy(&#39;cnpj&#39;)">CNPJ</th>
+            <th onclick="sortBy(&#39;pronto_socorro&#39;)">Pronto Socorro</th>
+            <th onclick="sortBy(&#39;internacao&#39;)">Internação</th>
+            <th onclick="sortBy(&#39;ambulatorial2&#39;)">Ambulatorial</th>
+            <th onclick="sortBy(&#39;fisioterapia&#39;)">Fisioterapia</th>
+            <th onclick="sortBy(&#39;peg&#39;)">PEG</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"><tr>
+      <td class="td-prestador">HOSPITAL A. C. CAMARGO</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60961968000106</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSP.PROF. EDMUNDO VASCONCELOS - GASTROCLINICA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">61062212000198</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL BENEFICENCIA PORTUGUESA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">61599908000158</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL DAS CLINICAS  FUND.FACULDADE DE MEDICINA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">56577059000100</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1268084</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL SANTA CATARINA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60922168000771</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL 9 DE JULHO (IMPAR SERVIÇOS HOSPITALARES S/A</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60884855000316</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">FUNDAÇÃO ZERBINI (INCOR)</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">50644053000113</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL E MATERNIDADE SANTA JOANA S/A (INCLUI CENTRO MÉDICO)</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60678604000113</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL SIRIO LIBANES (SP) SOC. BENEFIC SENHORAS</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">61590410000396</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1219184 / 1219185</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL DO CORACAO  ASSOCIACAO SANATORIO SIRIO</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60453024000390</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1217457</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL SANTA MONICA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">49667108000121</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">CERPO -  CENTRO DE RECUPERAÇÃO DE PATOLOGIAS OCULARES</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">52945193000157</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL SAMARITANO DE SÃO PAULO LTDA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">24344124000152</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL DO RIM E HIPERTENSAO</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">52803319000159</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1288216</td>
+    </tr><tr>
+      <td class="td-prestador">HOSPITAL SANTA PAULA (IMPAR SERVIÇOS HOSPITALARES S.A.) -</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60884855003331</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1281249 / 1290008</td>
+    </tr><tr>
+      <td class="td-prestador">ROBERT JAN BLOCH CIRURGIA PLASTICA E DA MÃO LTDA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60903077000101</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">PRIME CARE CLINICA MEDICA E ASSISTENCIA DOMICILIAR LTDA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">19138943000103</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1349637</td>
+    </tr><tr>
+      <td class="td-prestador">SERVICO DE HEMOTERAPIA NOVE DE JULHO LTDA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">45983087000100</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1433945</td>
+    </tr><tr>
+      <td class="td-prestador">ESHO EMP. SERVIÇOS HOSPITALARES SA - HOSP. SAMARITANO HIGIENÓPOLIS</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">29435005009932</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1424749 / 1424765</td>
+    </tr><tr>
+      <td class="td-prestador">INSTITUTO DOS OLHOS LTDA (EX INST TADEU CVINTAL)</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">10487946000188</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1438521</td>
+    </tr><tr>
+      <td class="td-prestador">DIAGNOSTICOS DA AMERICA SA SP - DELBONI LAVOISIER</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">61486650000183</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">CENTRO PAULISTA DE ONCOLOGIA LTDA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">52164662000109</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">A+ MEDICINA DIAGNÓSTICA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60840055010447</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">CLINICA SAO CARLOS DIAGNÓSTICO POR IMAGEM LTDA.</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">7283365000110</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1460347</td>
+    </tr><tr>
+      <td class="td-prestador">SOCIEDADE BENEFICENTE SAO CAMILO - IPIRANGA</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">60975737005110</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td class="td-peg">1473964</td>
+    </tr><tr>
+      <td class="td-prestador">GASTROMED INSTITUTO ZILBERSTEIN</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">476429000150</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-banco">AUDITAR NO BANCO</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">ADVANCE - CIR.VASC.E ANGIOLOG.</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">73640088000180</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td class="td-peg">—</td>
+    </tr><tr>
+      <td class="td-prestador">INSTITUIÇÃO ASSISTENCIAL EMMANUEL</td>
+      <td class="td-cnpj"><span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">59150318000100</span></td>
+      <td><span class="pill pill-x">–</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill pill-loco">AUDITADO IN LOCO</span></td>
+      <td><span class="pill-vazio">—</span></td>
+      <td class="td-peg">1551504</td>
+    </tr></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <h2>Área do Administrador</h2>
+    <p>Insira suas credenciais para acessar o painel de administração</p>
+    <div class="modal-field">
+      <label>Login</label>
+      <input type="text" id="loginInput" placeholder="Digite seu login" autocomplete="off">
+    </div>
+    <div class="modal-field">
+      <label>Senha</label>
+      <input type="password" id="senhaInput" placeholder="Digite sua senha" onkeydown="if(event.key===&#39;Enter&#39;)doLogin()">
+    </div>
+    <div class="modal-error" id="loginError">❌ Login ou senha incorretos. Tente novamente.</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeLogin()">Cancelar</button>
+      <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="confirm-overlay" id="confirmModal">
+  <div class="confirm-box">
+    <h3>⚠️ Confirmar exclusão</h3>
+    <p id="confirmMsg">Tem certeza que deseja excluir este prestador? Esta ação não pode ser desfeita.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="document.getElementById(&#39;confirmModal&#39;).classList.remove(&#39;open&#39;)">Cancelar</button>
+      <button class="btn-del" onclick="deletePrestador()">🗑 Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE INDICATOR -->
+<div class="save-indicator" id="saveIndicator" style="display: none;">✓ Alteração salva</div>
+
+<script>
+const DATA = {"ADCUR": [{"cnpj": "708923000100", "prestador": "IOP  PRODUTOS E SERVIÇOS DE QUIMIOTERAPIA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "76562198000169", "prestador": "HOSPITAL NOSSA SENHORA DAS GRAÇAS - CURITIBA -", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "3872790000355", "prestador": "GLOBAL CARE ASSISTÊNCIA DOMICILIAR LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "XXXXXXXXXXXX", "fisioterapia": "", "peg": ""}, {"cnpj": "73284374000150", "prestador": "CPO DAY  CENTRO PARANAENSE DE OFTALMOLOGIA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "1607538000121", "prestador": "HOSPITAL CARDIOLOGICO COSTANTINI S/A", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "", "fisioterapia": "", "peg": "1282874"}, {"cnpj": "694303000151", "prestador": "SMA - EMPREENDIMENTOS E PARTICIPAÇÕES S.A. (HOSPITAL VITA CURITIBA)", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "", "fisioterapia": "", "peg": "1194627 / 1010297 / 1159756"}, {"cnpj": "76530518000107", "prestador": "HOSPITAL XV LTDA", "pronto_socorro": "AUDITAR NO BANCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "", "fisioterapia": "", "peg": "1282437 / 1188300 / 1188304 / 1203131"}, {"cnpj": "76498013000102", "prestador": "HOSPITAL NOSSA SENHORA DO PILAR LTDA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1113338"}, {"cnpj": "75029660000102", "prestador": "RADIOCLINICA DIAGNOSTICO POR IMAGEM S/C LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "5503803000182", "prestador": "BABYCARE SERVIÇOS DE SAÚDE LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXX", "fisioterapia": "", "peg": "1349583"}, {"cnpj": "76659820002367", "prestador": "ASSOCIAÇÃO PARANAENSE DE CULTURA (HOSPITAL MARCELINO CHAMPAGNAT)", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "76689835000596", "prestador": "DAPI - LIGA DAS SENHORAS CATOLICAS DE CURITIBA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "81190449000242", "prestador": "FUNDAÇÃO DE ESTUDOS DAS DOENÇAS DO FÍGADO - KOUTOULAS - RIBEIRO", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "", "peg": "1379120"}, {"cnpj": "76708049000165", "prestador": "CENTRO DE ONCOLOGIA DO PARANA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "77538288000187", "prestador": "CETAC - CENTRO DE TOMOGRAFIA COMPUTADORIZADA LTDA.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "76502897000113", "prestador": "HOSPITAL SAO LUCAS - CURITIBA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "", "peg": "1247552 / 1350531"}, {"cnpj": "942063000167", "prestador": "INC - INSTITUTO DE NEUROLOGIA DE CURITIBA LTDA.", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "80352925000130", "prestador": "HOSPITAL SUGISAWA LTDA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXXXXXXXXX", "fisioterapia": "", "peg": "1412778/1383326"}, {"cnpj": "76717545000185", "prestador": "X-LEME  - SERVICOS DE RADIOLOGIA CLINICA S/C LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "3850913000195", "prestador": "IHOC - INSTITUTO DE HEMATOLOGIA E ONCOLOGIA CURITIBA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1377713"}, {"cnpj": "81394660000104", "prestador": "CENTRO MEDICO E CINESIOTERAPIA DA COLUNA E JOELHO  LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "AUDITAR NO BANCO", "peg": ""}, {"cnpj": "395490000172", "prestador": "CIRURGIA E DIAGNOSE EM  OFTALMOLOGIA DO PARANA LTDA - CDOP", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "XXXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "8840115000104", "prestador": "NATIONAL CARE - SERVIÇO DE ATENDIMENTO DOMICILIÁRIO À SAÚDE EIRELI", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "XXXXXXXXXXXX", "peg": ""}, {"cnpj": "81911240000140", "prestador": "CEDIP - CLINICA DE DIAGNÓSTICO POR IMAGEM DO PARANÁ LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}], "ADFOR": [{"cnpj": "7303837000159", "prestador": "HOSPITAL DE OLHOS LEIRIA DE ANDRADE S/S LTDA.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": "1401062"}, {"cnpj": "2887013000150", "prestador": "FUJIDAYCLINIC LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "10451523000108", "prestador": "COMUNIDADE TERAPEUTICA INSTITUTO VOLTA VIDA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "", "peg": ""}, {"cnpj": "30952367000176", "prestador": "OTO HOMECARE RESIDENCE – ASSISTÊNCIA DOMICILIAR LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "41580077000165", "prestador": "HOSPITAL SAO MATEUS", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXX", "fisioterapia": "", "peg": ""}, {"cnpj": "12260362000109", "prestador": "CLEAN ASSISTÊNCIA DOMICILIAR LTDA ME", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXX", "fisioterapia": "", "peg": "1356324"}, {"cnpj": "35024777000170", "prestador": "CLINICA CIRURGICA DR. MARCOS TEIXEIRA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "29275463000148", "prestador": "QORPO CENTRO INTEGRADO DE SAUDE LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "6157683000171", "prestador": "ECOGÊNESIS SERVIÇOS MÉDICOS DE IMAGENS LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "23443518000286", "prestador": "HOSPITAL OTOCLINICA LTDA - FILIAL", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "2529743000189", "prestador": "CLINICA BEROALDO JUREMA S.A.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1460327"}, {"cnpj": "1033656000173", "prestador": "CENTRO VISUAL DO CEARA S/C LTDA.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1427492"}, {"cnpj": "4825441000183", "prestador": "CLÍNICA NOSSA SENHORA DE FÁTIMA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "AUDITAR NO BANCO", "peg": ""}, {"cnpj": "7283365000110", "prestador": "CLINICA SAO CARLOS DIAGNÓSTICO POR IMAGEM LTDA.", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1639529"}, {"cnpj": "1540765000187", "prestador": "COOPEND-COOPERATIVA DE ENDOSCOPIA DO CEARA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "5613575000101", "prestador": "CTO - CENTRO TRAUMATO ORTOPEDICO LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXXX", "fisioterapia": "AUDITAR NO BANCO", "peg": "1642243"}, {"cnpj": "7871676000108", "prestador": "FUJISAN CENTRO DE HEMOTERAPIA E HEMATOLOGIA DO CE", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1400274"}], "ADPAL": [{"cnpj": "92815000000168", "prestador": "IRMANDADE SANTA CASA DE PORTO ALEGRE", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1252094 / 1258351 / 1185632"}, {"cnpj": "92685833000151", "prestador": "HOSPITAL MOINHOS DE VENTO", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "88630413000796", "prestador": "HOSPITAL SAO LUCAS DA PUC/RS", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1186618 / 1188149"}, {"cnpj": "3872790000193", "prestador": "GLOBAL CARE ASSISTENCIA DOMICILIAR S/C LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "88625686002443", "prestador": "HOSPITAL MAE DE DEUS", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1357466 / 1357474 / 1349307"}, {"cnpj": "92535210000100", "prestador": "ORTRA - CLINICA ORTOPEDIA TRAUMATOLOGIA URGENCIA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "", "peg": "1490114"}, {"cnpj": "88625686003849", "prestador": "HOSPITAL GIOVANNI BATTISTA - HGB", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "XXXXXXXXXXX", "peg": "1553607/ 1554603"}, {"cnpj": "94831294000147", "prestador": "INSTITUTO DE ONCOLOGIA KAPLAN LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "XXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "90141656000117", "prestador": "LAVINSKY INSTITUTO DE OFTALMOLOGIA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "1575835000132", "prestador": "PHYSIOSUL - CENTRO DE FISIOTERAPIA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "9128192000190", "prestador": "SÃO PIETRO DAY HOSPITAL ( CGAM )", "pronto_socorro": "AUDITAR NO BANCO", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}], "ADREC": [{"cnpj": "10892164000124", "prestador": "REAL HOSPITAL PORTUGUÊS DE BENEFICENCIA EM PE", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1223903"}, {"cnpj": "3559174000187", "prestador": "MULTIHEMO  S/C LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "12082912000139", "prestador": "RECIFE HOME CARE ASSISTENCIA MEDICA DOMICILIAR LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "?", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "8084394000115", "prestador": "NEFROCLINICA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "XXXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "9432196000168", "prestador": "HOSPITAL DE ORTOPEDIA E FRATURAS LTDA", "pronto_socorro": "AUDITAR NO BANCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "1909745000130", "prestador": "INTERNE HOME CARE LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "", "peg": ""}, {"cnpj": "8961047000123", "prestador": "GOT GRUPO DE ORTOPEDIA E TRAUMATOLOGIA LTDA", "pronto_socorro": "AUDITAR NO BANCO", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1252662 / 1257406 / 1222606"}, {"cnpj": "12857736000160", "prestador": "BORIS BERENSTEIN CENTRO DE DIAGNOSTICO S/C LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "11544848000106", "prestador": "CLINICA RADIOLOGICA LUCILO MARANHAO LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1419220"}, {"cnpj": "69924454000155", "prestador": "MEDIAX MEMORIAL IMAGEM E DIAGNOSTICO LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "99210000189", "prestador": "DILAB MEDICINA NUCLEAR", "pronto_socorro": "", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "40881302000130", "prestador": "HORE (ANTIGO HOPE)- HOSPITAL DE OLHOS DE RECIFE", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "XXXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "11933822000141", "prestador": "INSTITUTO DE DIAGNOSTICO JOSÉ ROCHA DE SÁ LTDA-EPP", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "10970077000148", "prestador": "IOR - INSTITUTO DE OLHOS DO RECIFE", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1489549"}, {"cnpj": "22978608000128", "prestador": "INTRADOR - INSTITUTO DE TRATAMENTO DA DOR LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "3774026000185", "prestador": "A. CLINICA REABILIT LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "AUDITAR NO BANCO", "peg": ""}, {"cnpj": "9001819000148", "prestador": "ORTOCENTRO PRONTO SOCORRO DE FRATURAS DO RECIFE", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "XXXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "8174500000151", "prestador": "LUCILO AVILA JR LTDA CLINICA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "XXXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "13814267000164", "prestador": "INFISIO - INSTITUTO DE FISIOTERAPIA DE PERNAMBUCO", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "XXXXXXXXXXXXXXX", "fisioterapia": "AUDITAR NO BANCO", "peg": "1491131"}, {"cnpj": "70209192000126", "prestador": "UNIGASTRO PE UNID ENDOSCOPIA MEMORIAL SAO JOSE", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "1816087000132", "prestador": "COOPECLIN - COOP. DE TRAB. DOS MÉD. DE ESP. CLI", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1434632"}], "ADRJA": [{"cnpj": "18010750000100", "prestador": "HOSPITAL SAO VICENTE DE PAULO", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "7755072000198", "prestador": "OFTALMORIO  CENTRO DE MICRO CIRURGIA OCULAR LTDA.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITAR NO BANCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "34106518000126", "prestador": "IBOL - INSTITUTO BRASILEIRO DE OFTALMOLOGIA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "40314684000110", "prestador": "PREVTOTAL LABORATÓRIO DE IMAGEM LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "29473196000113", "prestador": "CDR CLINICA DE DOENCAS RENAIS LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "33964776000180", "prestador": "CASA DE SAUDE SAINT ROMAN LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}], "ADSPA": [{"cnpj": "60961968000106", "prestador": "HOSPITAL A. C. CAMARGO", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "AUDITADO IN LOCO", "peg": ""}, {"cnpj": "61062212000198", "prestador": "HOSP.PROF. EDMUNDO VASCONCELOS - GASTROCLINICA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "61599908000158", "prestador": "HOSPITAL BENEFICENCIA PORTUGUESA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "56577059000100", "prestador": "HOSPITAL DAS CLINICAS  FUND.FACULDADE DE MEDICINA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": "1268084"}, {"cnpj": "60922168000771", "prestador": "HOSPITAL SANTA CATARINA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO / AUDITAR NO BANCO (SOMENTE FISIO)", "fisioterapia": "AUDITAR NO BANCO", "peg": ""}, {"cnpj": "60884855000316", "prestador": "HOSPITAL 9 DE JULHO (IMPAR SERVIÇOS HOSPITALARES S/A", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "50644053000113", "prestador": "FUNDAÇÃO ZERBINI (INCOR)", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "60678604000113", "prestador": "HOSPITAL E MATERNIDADE SANTA JOANA S/A (INCLUI CENTRO MÉDICO)", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "61590410000396", "prestador": "HOSPITAL SIRIO LIBANES (SP) SOC. BENEFIC SENHORAS", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1219184 / 1219185"}, {"cnpj": "60453024000390", "prestador": "HOSPITAL DO CORACAO  ASSOCIACAO SANATORIO SIRIO", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1217457"}, {"cnpj": "49667108000121", "prestador": "HOSPITAL SANTA MONICA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "", "fisioterapia": "", "peg": ""}, {"cnpj": "52945193000157", "prestador": "CERPO -  CENTRO DE RECUPERAÇÃO DE PATOLOGIAS OCULARES", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "24344124000152", "prestador": "HOSPITAL SAMARITANO DE SÃO PAULO LTDA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": ""}, {"cnpj": "52803319000159", "prestador": "HOSPITAL DO RIM E HIPERTENSAO", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1288216"}, {"cnpj": "60884855003331", "prestador": "HOSPITAL SANTA PAULA (IMPAR SERVIÇOS HOSPITALARES S.A.) -", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1281249 / 1290008"}, {"cnpj": "60903077000101", "prestador": "ROBERT JAN BLOCH CIRURGIA PLASTICA E DA MÃO LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXX", "fisioterapia": "", "peg": ""}, {"cnpj": "19138943000103", "prestador": "PRIME CARE CLINICA MEDICA E ASSISTENCIA DOMICILIAR LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1349637"}, {"cnpj": "45983087000100", "prestador": "SERVICO DE HEMOTERAPIA NOVE DE JULHO LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1433945"}, {"cnpj": "29435005009932", "prestador": "ESHO EMP. SERVIÇOS HOSPITALARES SA - HOSP. SAMARITANO HIGIENÓPOLIS", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1424749 / 1424765"}, {"cnpj": "10487946000188", "prestador": "INSTITUTO DOS OLHOS LTDA (EX INST TADEU CVINTAL)", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1438521"}, {"cnpj": "61486650000183", "prestador": "DIAGNOSTICOS DA AMERICA SA SP - DELBONI LAVOISIER", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "52164662000109", "prestador": "CENTRO PAULISTA DE ONCOLOGIA LTDA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "60840055010447", "prestador": "A+ MEDICINA DIAGNÓSTICA", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": ""}, {"cnpj": "7283365000110", "prestador": "CLINICA SAO CARLOS DIAGNÓSTICO POR IMAGEM LTDA.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "", "peg": "1460347"}, {"cnpj": "60975737005110", "prestador": "SOCIEDADE BENEFICENTE SAO CAMILO - IPIRANGA", "pronto_socorro": "AUDITADO IN LOCO", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "XXXXXXXXXXXX", "peg": "1473964"}, {"cnpj": "476429000150", "prestador": "GASTROMED INSTITUTO ZILBERSTEIN", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "XXXXXXXXXXXXXXXXX", "ambulatorial2": "AUDITAR NO BANCO", "fisioterapia": "XXXXXXXXXXXXXXXXX", "peg": ""}, {"cnpj": "73640088000180", "prestador": "ADVANCE - CIR.VASC.E ANGIOLOG.", "pronto_socorro": "XXXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "XXXXXXXXXXXXXXXXX", "fisioterapia": "XXXXXXXXXXXX", "peg": ""}, {"cnpj": "59150318000100", "prestador": "INSTITUIÇÃO ASSISTENCIAL EMMANUEL", "pronto_socorro": "XXXXXXXXXXXXXXXX", "internacao": "AUDITADO IN LOCO", "ambulatorial2": "AUDITADO IN LOCO", "fisioterapia": "", "peg": "1551504"}]};
+
+let ACCENTS = { ADCUR: '#3b82f6', ADFOR: '#06b6d4', ADPAL: '#8b5cf6', ADREC: '#f59e0b', ADRJA: '#10b981', ADSPA: '#ef4444' };
+let LABELS = { ADCUR: 'Curitiba', ADFOR: 'Fortaleza', ADPAL: 'Porto Alegre', ADREC: 'Recife', ADRJA: 'Rio de Janeiro', ADSPA: 'São Paulo' };
+
+// ========== PERSISTÊNCIA localStorage ==========
+const LS_KEY = 'dash_auditoria_v1';
+
+// Debounce para evitar publicações repetidas em sequência rápida
+let _publishTimer = null;
+let _retryTimer = null;
+
+// ===== Serialização segura para o Firebase =====
+// O RTDB descarta arrays/objetos vazios. Para não perder regionais sem
+// prestadores, convertemos cada regional num objeto com marcador e a lista.
+function serializarWorkingData(wd) {
+  const out = {};
+  Object.keys(wd).forEach(reg => {
+    out[reg] = { __reg: true, lista: Array.isArray(wd[reg]) ? wd[reg] : [] };
+  });
+  return out;
+}
+function desserializarWorkingData(raw) {
+  const out = {};
+  if (!raw) return out;
+  Object.keys(raw).forEach(reg => {
+    const v = raw[reg];
+    if (v && typeof v === 'object' && v.__reg) {
+      out[reg] = Array.isArray(v.lista) ? v.lista : [];
+    } else if (Array.isArray(v)) {
+      out[reg] = v;                       // formato antigo (compatibilidade)
+    } else if (v && typeof v === 'object') {
+      out[reg] = Object.values(v);        // RTDB pode devolver array como objeto
+    } else {
+      out[reg] = [];
+    }
+  });
+  return out;
+}
+
+function persistir() {
+  // Marca o momento da edição local (para comparar com o que vem do Firebase)
+  window._localUpdatedAt = Date.now();
+  // 1) Salva sempre no localStorage (backup local imediato)
+  try {
+    const estado = { workingData, LABELS, ACCENTS, users, hiddenRegs: [...HIDDEN_REGS], _localUpdatedAt: window._localUpdatedAt };
+    localStorage.setItem(LS_KEY, JSON.stringify(estado));
+  } catch(e) { console.warn('Falha ao salvar no localStorage:', e); }
+
+  // 2) Marca que há mudança pendente e publica no Firebase (debounce de 600ms)
+  window._pendingPublish = true;
+  clearTimeout(_publishTimer);
+  _publishTimer = setTimeout(publicarFirebase, 600);
+}
+
+async function publicarFirebase() {
+  const localTs = window._localUpdatedAt || Date.now();
+  const payload = {
+    workingData: serializarWorkingData(workingData),
+    LABELS, ACCENTS,
+    hiddenRegs: [...HIDDEN_REGS],
+    updatedAt: localTs,
+    publishedAt: new Date().toISOString(),
+    publishedBy: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.nome : 'Admin'
+  };
+  try {
+    // cache-busting igual ao padrão do AuditView
+    const res = await fetch(FB_BASE_URL + '.json?_=' + Date.now(), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      cache: 'no-store'
+    });
+    if (!res.ok) { const t = await res.text(); throw new Error('HTTP ' + res.status + ' — ' + t); }
+    window._lastPublishedAt = payload.publishedAt; // evita o polling reprocessar a própria escrita
+    window._lastRemoteUpdatedAt = localTs;
+    window._pendingPublish = false;                // publicou com sucesso → não há mais pendência
+    mostrarSyncBadge('ok');
+  } catch(err) {
+    console.error('Erro ao publicar no Firebase:', err);
+    mostrarSyncBadge('err');
+    // Mantém a pendência e tenta de novo em 5s (cobre falhas intermitentes de rede)
+    window._pendingPublish = true;
+    clearTimeout(_retryTimer);
+    _retryTimer = setTimeout(publicarFirebase, 5000);
+    if (!window._fbErrAlerted) {
+      window._fbErrAlerted = true;
+      alert('⚠ Não foi possível salvar no Firebase agora.\n\n' +
+            'Suas alterações estão salvas neste navegador e o sistema vai tentar publicar ' +
+            'automaticamente a cada 5 segundos até conseguir.\n\n' +
+            'Se persistir, use o botão "🔌 Testar Conexão" na aba Configurações.\n\n' +
+            'Detalhe técnico: ' + (err.message || err));
+    }
+  }
+}
+
+// Diagnóstico de conexão com o Firebase
+async function testarConexaoFirebase() {
+  const box = document.getElementById('fbDiag');
+  box.style.display = 'block';
+  box.style.background = 'rgba(59,130,246,.1)';
+  box.style.border = '1px solid rgba(59,130,246,.3)';
+  box.style.color = 'var(--text)';
+  box.innerHTML = '⏳ Testando conexão com o Firebase…';
+
+  const protocolo = location.protocol; // http:, https: ou file:
+  const linhas = [];
+  linhas.push(`<strong>Protocolo da página:</strong> ${protocolo} ${protocolo === 'file:' ? '⚠ (aberto direto do disco — pode bloquear o fetch)' : '✅'}`);
+
+  // Teste 1: leitura (GET)
+  let leituraOK = false;
+  try {
+    const r = await fetch(FB_BASE_URL + '/publishedAt.json', { cache: 'no-store' });
+    if (r.ok) { leituraOK = true; linhas.push('<strong>Leitura (GET):</strong> ✅ funcionou'); }
+    else linhas.push(`<strong>Leitura (GET):</strong> ❌ HTTP ${r.status}`);
+  } catch(e) {
+    linhas.push(`<strong>Leitura (GET):</strong> ❌ ${e.message} — requisição bloqueada antes de chegar ao servidor`);
+  }
+
+  // Teste 2: escrita (PUT num campo de teste)
+  let escritaOK = false;
+  if (leituraOK) {
+    try {
+      const r = await fetch(FB_BASE_URL + '/_teste_conexao.json', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(new Date().toISOString())
+      });
+      if (r.ok) { escritaOK = true; linhas.push('<strong>Escrita (PUT):</strong> ✅ funcionou'); }
+      else { const t = await r.text(); linhas.push(`<strong>Escrita (PUT):</strong> ❌ HTTP ${r.status} — ${t}`); }
+    } catch(e) {
+      linhas.push(`<strong>Escrita (PUT):</strong> ❌ ${e.message}`);
+    }
+  }
+
+  // Teste 3: lê o nó REAL e lista as regionais que estão no Firebase
+  try {
+    const r = await fetch(FB_BASE_URL + '.json?_=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) {
+      const p = await r.json();
+      const regsFB = p && p.workingData ? Object.keys(desserializarWorkingData(p.workingData)) : [];
+      const regsLocal = Object.keys(workingData);
+      linhas.push(`<strong>Regionais no Firebase:</strong> ${regsFB.length ? regsFB.join(', ') : '(vazio)'}`);
+      linhas.push(`<strong>Regionais nesta tela:</strong> ${regsLocal.join(', ')}`);
+      const faltando = regsLocal.filter(x => !regsFB.includes(x));
+      if (faltando.length) {
+        linhas.push(`<strong style="color:#f59e0b">⚠ Nesta tela mas NÃO no Firebase:</strong> ${faltando.join(', ')} — clique em "Forçar Publicação" para enviar.`);
+      }
+      linhas.push(`<strong>Última publicação:</strong> ${p && p.publishedBy ? p.publishedBy : '—'} em ${p && p.publishedAt ? p.publishedAt : '—'}`);
+    }
+  } catch(e) { /* ignora */ }
+
+
+  if (leituraOK && escritaOK) {
+    conclusao = '🎉 <strong>Tudo certo!</strong> A sincronização com o Firebase está funcionando normalmente.';
+    cor = ['rgba(16,185,129,.1)', 'rgba(16,185,129,.35)'];
+  } else if (!leituraOK) {
+    conclusao = '🚫 <strong>O navegador não consegue alcançar o Firebase via fetch.</strong><br>' +
+      'Causas prováveis: (1) firewall/proxy da empresa bloqueando <code>firebaseio.com</code>; ' +
+      '(2) extensão de bloqueio de anúncios/privacidade; ou (3) arquivo aberto via <code>file://</code>.<br>' +
+      'Teste: abra em outro navegador, desative extensões, ou peça ao TI para liberar o domínio.';
+    cor = ['rgba(239,68,68,.1)', 'rgba(239,68,68,.35)'];
+  } else {
+    conclusao = '⚠ <strong>Leitura funciona, mas escrita falhou.</strong> Verifique as regras do Firebase ' +
+      '(Realtime Database → Regras): <code>".write": true</code>.';
+    cor = ['rgba(245,158,11,.1)', 'rgba(245,158,11,.35)'];
+  }
+
+  box.style.background = cor[0];
+  box.style.border = '1px solid ' + cor[1];
+  box.innerHTML = linhas.map(l => '• ' + l).join('<br>') + '<br><br>' + conclusao;
+}
+
+async function carregarFirebase() {
+  try {
+    // cache-busting igual ao AuditView
+    const res = await fetch(FB_BASE_URL + '.json?_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const p = await res.json();
+    if (!p) { window._fbReachable = true; return false; }
+    window._fbReachable = true;
+
+    // PROTEÇÃO ANTI-PERDA: se o localStorage tem uma edição MAIS NOVA que ainda
+    // não foi publicada, não deixa o dado antigo do Firebase sobrescrever.
+    const remoteTs = p.updatedAt || 0;
+    const localTs  = window._localUpdatedAt || 0;
+    if (localTs > remoteTs && window._pendingPublish) {
+      console.warn('Edição local mais recente que o Firebase — mantendo local e republicando.');
+      setFonteBadge('local');
+      publicarFirebase(); // reenvia a versão local mais nova
+      return true;        // mantém os dados locais já carregados
+    }
+
+    if (p.workingData) workingData = desserializarWorkingData(p.workingData);
+    if (p.LABELS)      LABELS  = p.LABELS;   // substitui (não mescla)
+    if (p.ACCENTS)     ACCENTS = p.ACCENTS;  // substitui (não mescla)
+    if (p.hiddenRegs)  HIDDEN_REGS = new Set(p.hiddenRegs);
+    if (p.publishedAt) window._lastPublishedAt = p.publishedAt;
+    window._lastRemoteUpdatedAt = remoteTs;
+    window._localUpdatedAt = remoteTs;       // alinha o relógio local ao remoto
+    window._pendingPublish = false;
+    setFonteBadge('firebase');
+    return true;
+  } catch(err) {
+    console.warn('Falha ao carregar do Firebase, usando localStorage:', err);
+    window._fbReachable = false;
+    return false;
+  }
+}
+
+// Polling: a cada 20s verifica se houve nova publicação por outro usuário
+let _pollTimer = null;
+function iniciarPollingFirebase() {
+  if (_pollTimer) clearInterval(_pollTimer);
+  _pollTimer = setInterval(async () => {
+    // Nunca puxa do Firebase enquanto há edição local pendente de publicação
+    if (window._pendingPublish) return;
+    try {
+      const res = await fetch(FB_BASE_URL + '/publishedAt.json?_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return;
+      const publishedAt = await res.json();
+      if (!publishedAt || publishedAt === window._lastPublishedAt) return;
+      window._lastPublishedAt = publishedAt;
+      const full = await fetch(FB_BASE_URL + '.json?_=' + Date.now(), { cache: 'no-store' });
+      if (!full.ok) return;
+      const p = await full.json();
+      if (!p) return;
+      // Revalida: se durante o fetch surgiu edição local, aborta o overwrite
+      if (window._pendingPublish) return;
+      if (p.workingData) workingData = desserializarWorkingData(p.workingData);
+      if (p.LABELS)      LABELS  = p.LABELS;
+      if (p.ACCENTS)     ACCENTS = p.ACCENTS;
+      if (p.hiddenRegs)  HIDDEN_REGS = new Set(p.hiddenRegs);
+      if (p.updatedAt)   { window._localUpdatedAt = p.updatedAt; window._lastRemoteUpdatedAt = p.updatedAt; }
+      setFonteBadge('firebase');
+      rebuildCards();
+      if (activeRegional && workingData[activeRegional]) renderTable();
+    } catch(e) { /* silencioso */ }
+  }, 20000);
+}
+
+// Badge flutuante de status de sincronização
+function mostrarSyncBadge(status) {
+  let b = document.getElementById('syncBadge');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'syncBadge';
+    b.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;padding:8px 16px;' +
+      'border-radius:20px;font-size:12px;font-weight:700;font-family:var(--font);' +
+      'transition:opacity .4s;pointer-events:none;';
+    document.body.appendChild(b);
+  }
+  if (status === 'ok') {
+    b.style.cssText += 'background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);color:#10b981;';
+    b.textContent = '🔥 Sincronizado com Firebase';
+  } else {
+    b.style.cssText += 'background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444;';
+    b.textContent = '⚠ Falha ao sincronizar';
+  }
+  b.style.opacity = '1';
+  clearTimeout(b._t);
+  b._t = setTimeout(() => { b.style.opacity = '0'; }, 3000);
+}
+
+// Badge no header indicando a fonte dos dados
+function setFonteBadge(fonte) {
+  const el = document.getElementById('fonteBadge');
+  if (!el) return;
+  if (fonte === 'firebase') { el.textContent = '🔥 Firebase'; el.style.color = '#f97316'; }
+  else { el.textContent = '💾 Local'; el.style.color = 'var(--text-muted)'; }
+}
+
+function carregarEstado() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const estado = JSON.parse(raw);
+    if (estado.workingData) workingData = estado.workingData;
+    if (estado.LABELS)      LABELS  = estado.LABELS;
+    if (estado.ACCENTS)     ACCENTS = estado.ACCENTS;
+    if (estado.users)       users = estado.users;
+    if (estado.hiddenRegs)  HIDDEN_REGS = new Set(estado.hiddenRegs);
+    if (estado._localUpdatedAt) window._localUpdatedAt = estado._localUpdatedAt;
+    return true;
+  } catch(e) { console.warn('Falha ao carregar localStorage:', e); return false; }
+}
+
+function resetarDados() {
+  if (!confirm('Isso apagará TODAS as edições e restaurará os dados originais. Continuar?')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+// ========== FIM PERSISTÊNCIA ==========
+
+// ========== TEMA CLARO / ESCURO ==========
+const TEMA_KEY = 'dash_tema_v1';
+let temaAtual = localStorage.getItem(TEMA_KEY) || 'dark';
+
+function aplicarTema(tema) {
+  temaAtual = tema;
+  const root = document.documentElement;
+  const btn  = document.getElementById('themeBtn');
+  const icon = document.getElementById('themeIcon');
+  const lbl  = document.getElementById('themeLabel');
+  if (tema === 'light') {
+    root.classList.add('light');
+    if (icon) icon.textContent = '🌙';
+    if (lbl)  lbl.textContent  = 'Tema Escuro';
+    if (btn)  btn.title        = 'Alternar para tema escuro';
+  } else {
+    root.classList.remove('light');
+    if (icon) icon.textContent = '☀️';
+    if (lbl)  lbl.textContent  = 'Tema Claro';
+    if (btn)  btn.title        = 'Alternar para tema claro';
+  }
+  localStorage.setItem(TEMA_KEY, tema);
+}
+
+function toggleTema() {
+  aplicarTema(temaAtual === 'dark' ? 'light' : 'dark');
+}
+
+// Aplica tema salvo imediatamente ao carregar
+aplicarTema(temaAtual);
+// ========== FIM TEMA ==========
+
+let workingData = JSON.parse(JSON.stringify(DATA));
+let activeRegional = null;
+let sortField = null, sortDir = 1;
+let isAdmin = false;
+let currentUser = null;
+let HIDDEN_REGS = new Set();
+let adminLog = [];
+let editRegIdx = null, editPresIdx = null;
+
+// ========== AUTH ==========
+function handleAdminClick() {
+  if (isAdmin) {
+    document.getElementById('adminPanel').classList.toggle('visible');
+  } else {
+    document.getElementById('loginModal').classList.add('open');
+    setTimeout(() => document.getElementById('loginInput').focus(), 100);
+  }
+}
+
+function doLogin() {
+  const login = document.getElementById('loginInput').value.trim();
+  const senha = document.getElementById('senhaInput').value;
+
+  // Busca o usuário na lista (case-insensitive no login)
+  const user = users.find(u =>
+    u.login.toLowerCase() === login.toLowerCase() &&
+    u.senha === senha &&
+    u.status === 'ativo'
+  );
+
+  if (user) {
+    isAdmin = true;
+    currentUser = user;
+    closeLogin();
+
+    // Exibe o painel apenas se for admin ou editor (visualizador não acessa o painel)
+    if (user.perfil === 'admin' || user.perfil === 'editor') {
+      document.getElementById('adminPanel').classList.add('visible');
+    }
+
+    // Esconde aba de Usuários para não-admins
+    document.querySelectorAll('.admin-tab').forEach((t, i) => {
+      const tabs = ['edit','add','config','users','log'];
+      if (tabs[i] === 'users' || tabs[i] === 'config') {
+        t.style.display = user.perfil === 'admin' ? '' : 'none';
+      }
+    });
+
+    document.getElementById('adminBadge').classList.add('visible');
+    document.getElementById('adminBadge').textContent = `⚙ ${user.perfil.toUpperCase()} · ${user.nome.split(' ')[0]}`;
+    document.getElementById('adminBtn').classList.add('logged-in');
+    document.getElementById('adminBtn').textContent = `⚙ ${user.nome.split(' ')[0]}`;
+
+    addLog('LOGIN', `Usuário "${user.nome}" (${user.perfil}) autenticado`);
+    buildConfigForms();
+    populateEditRegionals();
+    renderTable();
+  } else {
+    // Verifica se o login existe mas está inativo
+    const inativo = users.find(u => u.login.toLowerCase() === login.toLowerCase() && u.status === 'inativo');
+    const errEl = document.getElementById('loginError');
+    errEl.textContent = inativo
+      ? '🚫 Este usuário está inativo. Contate o administrador.'
+      : '❌ Login ou senha incorretos. Tente novamente.';
+    errEl.classList.add('show');
+    document.getElementById('senhaInput').value = '';
+    document.getElementById('senhaInput').focus();
+  }
+}
+
+function closeLogin() {
+  document.getElementById('loginModal').classList.remove('open');
+  document.getElementById('loginInput').value = '';
+  document.getElementById('senhaInput').value = '';
+  document.getElementById('loginError').classList.remove('show');
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  currentUser = null;
+  document.getElementById('adminPanel').classList.remove('visible');
+  document.getElementById('adminBadge').classList.remove('visible');
+  document.getElementById('adminBadge').textContent = '⚙ ADMIN ATIVO';
+  document.getElementById('adminBtn').classList.remove('logged-in');
+  document.getElementById('adminBtn').textContent = '🔐 Área do Administrador';
+  renderTable();
+}
+
+// ========== ADMIN TABS ==========
+function showAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach((t,i) => {
+    const tabs = ['edit','add','config','users','log'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'users') renderUserList();
+}
+
+// ========== USERS MANAGEMENT ==========
+let users = [
+  { id: 1, nome: 'Administrador', login: 'Credenciado', senha: 'Credenciado', perfil: 'admin', status: 'ativo', criado: 'Sistema' }
+];
+let editingUserId = null;
+
+const PERFIL_LABELS = { admin: '⚙ Administrador', editor: '✏ Editor', visualizador: '👁 Visualizador' };
+const PERFIL_PILLS  = { admin: 'pill-admin', editor: 'pill-editor', visualizador: 'pill-vis' };
+const PERFIL_EMOJIS = { admin: '⚙', editor: '✏', visualizador: '👁' };
+
+function cadastrarUsuario() {
+  const errEl = document.getElementById('userFormError');
+  errEl.style.display = 'none';
+
+  const nome   = document.getElementById('nu_nome').value.trim();
+  const login  = document.getElementById('nu_login').value.trim();
+  const senha  = document.getElementById('nu_senha').value;
+  const senha2 = document.getElementById('nu_senha2').value;
+  const perfil = document.getElementById('nu_perfil').value;
+  const status = document.getElementById('nu_status').value;
+
+  if (!nome || !login || !senha) { showUserError('Preencha nome, login e senha.'); return; }
+  if (senha.length < 6) { showUserError('A senha deve ter pelo menos 6 caracteres.'); return; }
+  if (senha !== senha2) { showUserError('As senhas não coincidem.'); return; }
+  if (users.find(u => u.login.toLowerCase() === login.toLowerCase())) {
+    showUserError('Este login já está em uso. Escolha outro.'); return;
+  }
+
+  const novoUser = {
+    id: Date.now(),
+    nome, login, senha, perfil, status,
+    criado: new Date().toLocaleDateString('pt-BR')
+  };
+  users.push(novoUser);
+  addLog('USUÁRIO', `Usuário "${nome}" (${login}) cadastrado com perfil ${PERFIL_LABELS[perfil]}`);
+  limparFormUsuario();
+  renderUserList();
+  persistir();
+  showSaved();
+}
+
+function showUserError(msg) {
+  const el = document.getElementById('userFormError');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function limparFormUsuario() {
+  ['nu_nome','nu_login','nu_senha','nu_senha2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nu_perfil').value = 'visualizador';
+  document.getElementById('nu_status').value = 'ativo';
+  document.getElementById('userFormError').style.display = 'none';
+}
+
+function renderUserList() {
+  const search = (document.getElementById('userSearch')?.value || '').toLowerCase();
+  const container = document.getElementById('userList');
+  if (!container) return;
+
+  const filtered = users.filter(u =>
+    u.nome.toLowerCase().includes(search) ||
+    u.login.toLowerCase().includes(search) ||
+    u.perfil.toLowerCase().includes(search)
+  );
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="user-empty">Nenhum usuário encontrado.</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(u => {
+    const initials = u.nome.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const isSystemAdmin = u.login === 'Credenciado';
+    const canDelete = !isSystemAdmin;
+    if (editingUserId === u.id) {
+      return `
+        <div class="user-edit-form">
+          <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:12px;">✏ Editando: ${u.nome}</div>
+          <div class="user-edit-grid">
+            <div class="form-field">
+              <label>Nome</label>
+              <input type="text" id="eu_nome" value="${u.nome}">
+            </div>
+            <div class="form-field">
+              <label>Login</label>
+              <input type="text" id="eu_login" value="${u.login}" ${isSystemAdmin ? 'readonly style="opacity:0.5"' : ''}>
+            </div>
+            <div class="form-field">
+              <label>Nova Senha <span style="color:var(--text-muted);font-weight:400">(deixe vazio para manter)</span></label>
+              <input type="password" id="eu_senha" placeholder="Nova senha…">
+            </div>
+            <div class="form-field">
+              <label>Perfil</label>
+              <select id="eu_perfil" ${isSystemAdmin ? 'disabled style="opacity:0.5"' : ''}>
+                <option value="visualizador" ${u.perfil==='visualizador'?'selected':''}>👁 Visualizador</option>
+                <option value="editor" ${u.perfil==='editor'?'selected':''}>✏ Editor</option>
+                <option value="admin" ${u.perfil==='admin'?'selected':''}>⚙ Administrador</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Status</label>
+              <select id="eu_status" ${isSystemAdmin ? 'disabled style="opacity:0.5"' : ''}>
+                <option value="ativo" ${u.status==='ativo'?'selected':''}>✅ Ativo</option>
+                <option value="inativo" ${u.status==='inativo'?'selected':''}>🚫 Inativo</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-save" onclick="saveUserEdit(${u.id})">💾 Salvar</button>
+            <button class="btn-cancel" onclick="editingUserId=null;renderUserList()">Cancelar</button>
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="user-card">
+        <div class="user-avatar" style="border-color:${u.status==='ativo'?'var(--green)':'var(--red)'}">
+          ${PERFIL_EMOJIS[u.perfil]}
+        </div>
+        <div class="user-info">
+          <div class="user-name">${u.nome}</div>
+          <div class="user-login">@${u.login} · cadastrado em ${u.criado}</div>
+          <div class="user-meta">
+            <span class="user-pill ${PERFIL_PILLS[u.perfil]}">${PERFIL_LABELS[u.perfil]}</span>
+            <span class="user-pill ${u.status==='ativo'?'pill-ativo':'pill-inativo'}">${u.status==='ativo'?'✅ Ativo':'🚫 Inativo'}</span>
+          </div>
+        </div>
+        <div class="user-actions">
+          <button class="user-btn" onclick="startEditUser(${u.id})">✏ Editar</button>
+          ${canDelete ? `<button class="user-btn del" onclick="deleteUser(${u.id})">🗑</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function startEditUser(id) {
+  editingUserId = id;
+  renderUserList();
+  // Scroll to edit form
+  setTimeout(() => document.querySelector('.user-edit-form')?.scrollIntoView({ behavior:'smooth', block:'center' }), 50);
+}
+
+function saveUserEdit(id) {
+  const u = users.find(u => u.id === id);
+  if (!u) return;
+  const novoLogin = document.getElementById('eu_login').value.trim();
+  const novaSenha = document.getElementById('eu_senha').value;
+  const loginConflito = users.find(x => x.id !== id && x.login.toLowerCase() === novoLogin.toLowerCase());
+  if (loginConflito) { alert('Este login já está em uso por outro usuário.'); return; }
+  u.nome   = document.getElementById('eu_nome').value.trim() || u.nome;
+  u.login  = novoLogin || u.login;
+  if (novaSenha && novaSenha.length >= 6) u.senha = novaSenha;
+  if (!document.getElementById('eu_perfil').disabled) u.perfil = document.getElementById('eu_perfil').value;
+  if (!document.getElementById('eu_status').disabled) u.status = document.getElementById('eu_status').value;
+  addLog('USUÁRIO', `Dados de "${u.nome}" (${u.login}) atualizados`);
+  editingUserId = null;
+  renderUserList();
+  persistir();
+  showSaved();
+}
+
+function deleteUser(id) {
+  const u = users.find(u => u.id === id);
+  if (!u) return;
+  if (!confirm(`Excluir o usuário "${u.nome}" (@${u.login})?`)) return;
+  users = users.filter(u => u.id !== id);
+  addLog('USUÁRIO', `Usuário "${u.nome}" excluído`);
+  renderUserList();
+  persistir();
+  showSaved();
+}
+
+// ========== EDIT PRESTADOR ==========
+function populateEditRegionals() {
+  const sel = document.getElementById('editRegional');
+  sel.innerHTML = '<option value="">Selecione a Regional…</option>';
+  Object.keys(workingData).forEach(reg => {
+    sel.innerHTML += `<option value="${reg}">${reg} — ${LABELS[reg]}</option>`;
+  });
+}
+
+function loadEditPrestadores() {
+  const reg = document.getElementById('editRegional').value;
+  const sel = document.getElementById('editPrestador');
+  sel.innerHTML = '<option value="">Selecione o Prestador…</option>';
+  if (!reg) { document.getElementById('editForm').classList.remove('visible'); return; }
+  workingData[reg].forEach((p, i) => {
+    sel.innerHTML += `<option value="${i}">${p.prestador}</option>`;
+  });
+}
+
+function loadEditForm() {
+  const reg = document.getElementById('editRegional').value;
+  const idx = document.getElementById('editPrestador').value;
+  if (!reg || idx === '') { document.getElementById('editForm').classList.remove('visible'); return; }
+  editRegIdx = reg; editPresIdx = parseInt(idx);
+  const p = workingData[reg][idx];
+  document.getElementById('ef_prestador').value = p.prestador;
+  document.getElementById('ef_cnpj').value = p.cnpj;
+  document.getElementById('ef_regional').value = reg;
+  setSelectVal('ef_pronto_socorro', p.pronto_socorro);
+  setSelectVal('ef_internacao', p.internacao);
+  setSelectVal('ef_ambulatorial2', p.ambulatorial2);
+  setSelectVal('ef_fisioterapia', p.fisioterapia);
+  document.getElementById('ef_peg').value = p.peg || '';
+  document.getElementById('editForm').classList.add('visible');
+}
+
+function setSelectVal(id, val) {
+  const sel = document.getElementById(id);
+  const opt = Array.from(sel.options).find(o => o.value === val);
+  if (opt) sel.value = val; else sel.value = '';
+}
+
+function saveEditForm() {
+  if (editRegIdx === null) return;
+  const newReg = document.getElementById('ef_regional').value;
+  const updated = {
+    prestador: document.getElementById('ef_prestador').value.trim(),
+    cnpj: document.getElementById('ef_cnpj').value.trim(),
+    pronto_socorro: document.getElementById('ef_pronto_socorro').value,
+    internacao: document.getElementById('ef_internacao').value,
+    ambulatorial2: document.getElementById('ef_ambulatorial2').value,
+    fisioterapia: document.getElementById('ef_fisioterapia').value,
+    peg: document.getElementById('ef_peg').value.trim()
+  };
+  const oldName = workingData[editRegIdx][editPresIdx].prestador;
+  if (newReg !== editRegIdx) {
+    workingData[editRegIdx].splice(editPresIdx, 1);
+    workingData[newReg].push(updated);
+    addLog('EDITAR', `"${oldName}" movido de ${editRegIdx} para ${newReg}`);
+  } else {
+    workingData[editRegIdx][editPresIdx] = updated;
+    addLog('EDITAR', `"${updated.prestador}" atualizado em ${editRegIdx}`);
+  }
+  clearEditForm();
+  rebuildCards();
+  if (activeRegional) renderTable();
+  persistir();
+  showSaved();
+}
+
+function clearEditForm() {
+  document.getElementById('editRegional').value = '';
+  document.getElementById('editPrestador').innerHTML = '<option value="">Selecione o Prestador…</option>';
+  document.getElementById('editForm').classList.remove('visible');
+  editRegIdx = null; editPresIdx = null;
+}
+
+function confirmDelete() {
+  if (editRegIdx === null) return;
+  const nome = workingData[editRegIdx][editPresIdx].prestador;
+  document.getElementById('confirmMsg').textContent = `Excluir "${nome}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function deletePrestador() {
+  document.getElementById('confirmModal').classList.remove('open');
+  if (editRegIdx === null) return;
+  const nome = workingData[editRegIdx][editPresIdx].prestador;
+  workingData[editRegIdx].splice(editPresIdx, 1);
+  addLog('EXCLUIR', `"${nome}" removido de ${editRegIdx}`);
+  clearEditForm();
+  rebuildCards();
+  if (activeRegional) renderTable();
+  persistir();
+  showSaved();
+}
+
+// ========== ADD PRESTADOR ==========
+function addPrestador() {
+  const reg = document.getElementById('af_regional').value;
+  const nome = document.getElementById('af_prestador').value.trim();
+  if (!reg || !nome) { alert('Preencha pelo menos o Nome e a Regional.'); return; }
+  const novo = {
+    prestador: nome,
+    cnpj: document.getElementById('af_cnpj').value.trim(),
+    pronto_socorro: document.getElementById('af_pronto_socorro').value,
+    internacao: document.getElementById('af_internacao').value,
+    ambulatorial2: document.getElementById('af_ambulatorial2').value,
+    fisioterapia: document.getElementById('af_fisioterapia').value,
+    peg: document.getElementById('af_peg').value.trim()
+  };
+  workingData[reg].push(novo);
+  addLog('ADICIONAR', `"${nome}" adicionado em ${reg}`);
+  clearAddForm();
+  rebuildCards();
+  if (activeRegional === reg) renderTable();
+  persistir();
+  showSaved();
+}
+
+function clearAddForm() {
+  ['af_prestador','af_cnpj','af_peg'].forEach(id => document.getElementById(id).value = '');
+  ['af_regional','af_pronto_socorro','af_internacao','af_ambulatorial2','af_fisioterapia'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ========== CONFIG ==========
+function buildConfigForms() {
+  renderConfigLabels();
+  renderConfigColors();
+  renderRegRemoveList();
+  renderRegVisibilityList();
+  // live preview for color picker
+  const nr_cor = document.getElementById('nr_cor');
+  if (nr_cor) nr_cor.oninput = () => {
+    document.getElementById('nr_cor_preview').textContent = nr_cor.value;
+  };
+}
+
+function renderConfigLabels() {
+  const lblDiv = document.getElementById('configLabels');
+  if (!lblDiv) return;
+  lblDiv.innerHTML = Object.keys(LABELS).map(reg =>
+    `<div class="config-field"><span>${reg}</span><input type="text" id="lbl_${reg}" value="${LABELS[reg]}"></div>`
+  ).join('');
+}
+
+function renderConfigColors() {
+  const colDiv = document.getElementById('configColors');
+  if (!colDiv) return;
+  colDiv.innerHTML = Object.keys(ACCENTS).map(reg =>
+    `<div class="config-field"><span>${reg}</span><input type="color" id="col_${reg}" value="${ACCENTS[reg]}"></div>`
+  ).join('');
+}
+
+function renderRegRemoveList() {
+  const el = document.getElementById('regRemoveList');
+  if (!el) return;
+  const regs = Object.keys(workingData);
+  if (regs.length === 0) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">Nenhuma regional cadastrada.</div>'; return; }
+  el.innerHTML = regs.map(reg => {
+    const n = workingData[reg].length;
+    return `<div class="reg-remove-row">
+      <div class="reg-remove-info">
+        <div class="reg-dot" style="background:${ACCENTS[reg]||'#64748b'}"></div>
+        <div>
+          <span style="font-weight:600">${reg}</span>
+          <span style="color:var(--text-muted);margin-left:8px">${LABELS[reg]||''}</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">${n} prestador${n!==1?'es':''}</span>
+      </div>
+      <button class="user-btn del" onclick="confirmarRemoverRegional('${reg}')">🗑 Remover</button>
+    </div>`;
+  }).join('');
+}
+
+function renderRegVisibilityList() {
+  const el = document.getElementById('regVisibilityList');
+  if (!el) return;
+  const regs = Object.keys(workingData);
+  if (regs.length === 0) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">Nenhuma regional cadastrada.</div>'; return; }
+  el.innerHTML = regs.map(reg => {
+    const visible = !HIDDEN_REGS.has(reg);
+    const n = workingData[reg].length;
+    return `<div class="toggle-row">
+      <div class="toggle-row-left">
+        <div class="reg-dot" style="background:${ACCENTS[reg]||'#64748b'};width:14px;height:14px;border-radius:50%"></div>
+        <div>
+          <div class="toggle-label">
+            ${reg}
+            <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:6px">${LABELS[reg]||''}</span>
+            ${!visible ? '<span class="toggle-hidden-badge">OCULTO</span>' : ''}
+          </div>
+          <div class="toggle-sub">${n} prestador${n!==1?'es':''}</div>
+        </div>
+      </div>
+      <label class="toggle-switch" title="${visible?'Ocultar':'Exibir'} card">
+        <input type="checkbox" ${visible?'checked':''} onchange="toggleRegVisibility('${reg}', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`;
+  }).join('');
+}
+
+function saveLabels() {
+  Object.keys(LABELS).forEach(reg => {
+    const el = document.getElementById('lbl_' + reg);
+    if (el) { const v = el.value.trim(); if (v) { addLog('CONFIG', `Nome de ${reg} alterado para "${v}"`); LABELS[reg] = v; } }
+  });
+  rebuildCards();
+  renderRegRemoveList();
+  persistir();
+  showSaved();
+}
+
+function saveColors() {
+  Object.keys(ACCENTS).forEach(reg => {
+    const el = document.getElementById('col_' + reg);
+    if (el) { ACCENTS[reg] = el.value; addLog('CONFIG', `Cor de ${reg} alterada para ${el.value}`); }
+  });
+  rebuildCards();
+  persistir();
+  showSaved();
+}
+
+function addNovaRegional() {
+  const errEl = document.getElementById('newRegError');
+  errEl.style.display = 'none';
+  const codigo = document.getElementById('nr_codigo').value.trim().toUpperCase();
+  const nome   = document.getElementById('nr_nome').value.trim();
+  const cor    = document.getElementById('nr_cor').value;
+
+  if (!codigo) { showRegError('Informe o código da regional.'); return; }
+  if (!nome)   { showRegError('Informe o nome da regional.'); return; }
+  if (!/^[A-Z0-9]{2,10}$/.test(codigo)) { showRegError('O código deve ter entre 2 e 10 letras/números, sem espaços.'); return; }
+  if (workingData[codigo] !== undefined) { showRegError(`A regional "${codigo}" já existe.`); return; }
+
+  // Registra tudo
+  workingData[codigo] = [];
+  LABELS[codigo] = nome;
+  ACCENTS[codigo] = cor;
+
+  // Atualiza selects de regional nos outros formulários
+  refreshRegionalSelects(codigo);
+
+  addLog('CONFIG', `Nova regional "${codigo} — ${nome}" criada`);
+  limparNovaRegional();
+  rebuildCards();
+  buildConfigForms();
+  persistir();
+  showSaved();
+}
+
+function showRegError(msg) {
+  const el = document.getElementById('newRegError');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function limparNovaRegional() {
+  document.getElementById('nr_codigo').value = '';
+  document.getElementById('nr_nome').value = '';
+  document.getElementById('nr_cor').value = '#6366f1';
+  document.getElementById('nr_cor_preview').textContent = '#6366f1';
+  document.getElementById('newRegError').style.display = 'none';
+}
+
+function confirmarRemoverRegional(reg) {
+  const n = workingData[reg].length;
+  const msg = n > 0
+    ? `Remover a regional "${reg} — ${LABELS[reg]}"?\n\nIsso excluirá também ${n} prestador${n!==1?'es':''} vinculado${n!==1?'s':''}.`
+    : `Remover a regional "${reg} — ${LABELS[reg]}"?`;
+  if (!confirm(msg)) return;
+  delete workingData[reg];
+  delete LABELS[reg];
+  delete ACCENTS[reg];
+  addLog('CONFIG', `Regional "${reg}" removida`);
+  if (activeRegional === reg) closePanel();
+  refreshRegionalSelects();
+  rebuildCards();
+  buildConfigForms();
+  persistir();
+  showSaved();
+}
+
+function refreshRegionalSelects(novaOpcao) {
+  // Atualiza TODOS os <select> de regional (adicionar, editar form, editar busca)
+  ['ef_regional','af_regional','editRegional'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    const placeholder = (id === 'editRegional')
+      ? '<option value="">Selecione a Regional…</option>'
+      : (id === 'af_regional' ? '<option value="">Selecione…</option>' : '');
+    sel.innerHTML = placeholder;
+    Object.keys(workingData).forEach(reg => {
+      sel.innerHTML += `<option value="${reg}">${reg}${LABELS[reg] ? ' — ' + LABELS[reg] : ''}</option>`;
+    });
+    // Mantém a seleção anterior se ainda existir; senão usa a nova opção
+    if (current && workingData[current] !== undefined) sel.value = current;
+    else if (novaOpcao && workingData[novaOpcao] !== undefined) sel.value = novaOpcao;
+  });
+}
+
+// ========== EXPORTAÇÃO (Excel / CSV) ==========
+// Cabeçalhos das colunas (ordem e rótulos amigáveis)
+const EXPORT_COLS = [
+  { key: 'prestador',      label: 'Prestador' },
+  { key: 'cnpj',           label: 'CNPJ' },
+  { key: 'pronto_socorro', label: 'Pronto Socorro' },
+  { key: 'internacao',     label: 'Internação' },
+  { key: 'ambulatorial2',  label: 'Ambulatorial' },
+  { key: 'fisioterapia',   label: 'Fisioterapia' },
+  { key: 'peg',            label: 'PEG' }
+];
+
+function _dataHoje() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+// Nome de aba válido no Excel (máx 31 chars, sem caracteres proibidos)
+function _nomeAba(reg) {
+  const base = LABELS[reg] ? `${reg} - ${LABELS[reg]}` : reg;
+  return base.replace(/[\\\/\?\*\[\]:]/g, '').slice(0, 31);
+}
+
+function exportarExcel() {
+  if (typeof XLSX === 'undefined') {
+    alert('A biblioteca de Excel não carregou. Verifique sua conexão e recarregue a página.');
+    return;
+  }
+  const regs = Object.keys(workingData);
+  if (regs.length === 0) { alert('Não há dados para exportar.'); return; }
+
+  const wb = XLSX.utils.book_new();
+  let totalAbas = 0;
+
+  regs.forEach(reg => {
+    const linhas = (workingData[reg] || []).map(p => {
+      const o = {};
+      EXPORT_COLS.forEach(c => { o[c.label] = p[c.key] || ''; });
+      return o;
+    });
+    // Inclui regional mesmo sem prestadores (cabeçalho apenas)
+    const ws = XLSX.utils.json_to_sheet(linhas, { header: EXPORT_COLS.map(c => c.label) });
+    // Largura das colunas
+    ws['!cols'] = [
+      { wch: 42 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 22 }
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, _nomeAba(reg));
+    totalAbas++;
+  });
+
+  if (totalAbas === 0) { alert('Não há regionais para exportar.'); return; }
+  XLSX.writeFile(wb, `Prestadores_Auditoria_${_dataHoje()}.xlsx`);
+  addLog('EXPORTAR', `Excel gerado com ${totalAbas} aba(s)`);
+}
+
+function exportarCSV() {
+  const regs = Object.keys(workingData);
+  if (regs.length === 0) { alert('Não há dados para exportar.'); return; }
+
+  const sep = ';'; // ponto-e-vírgula: melhor compatibilidade com Excel em PT-BR
+  const esc = v => {
+    const s = String(v == null ? '' : v);
+    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+
+  const header = ['Regional', 'Nome da Regional', ...EXPORT_COLS.map(c => c.label)];
+  const linhas = [header.join(sep)];
+
+  regs.forEach(reg => {
+    (workingData[reg] || []).forEach(p => {
+      const row = [reg, LABELS[reg] || '', ...EXPORT_COLS.map(c => p[c.key] || '')];
+      linhas.push(row.map(esc).join(sep));
+    });
+  });
+
+  // BOM para o Excel reconhecer acentuação UTF-8
+  const csv = '\uFEFF' + linhas.join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Prestadores_Auditoria_${_dataHoje()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  addLog('EXPORTAR', `CSV gerado (${linhas.length - 1} prestadores)`);
+}
+
+// ========== LOG ==========
+function addLog(action, msg) {
+  const now = new Date().toLocaleTimeString('pt-BR');
+  adminLog.unshift({ time: now, action, msg });
+  const logEl = document.getElementById('adminLog');
+  if (logEl) {
+    logEl.innerHTML = adminLog.map(e =>
+      `<div class="log-entry"><span class="log-time">${e.time}</span><span class="log-action">[${e.action}]</span> ${e.msg}</div>`
+    ).join('');
+  }
+}
+
+function clearLog() {
+  adminLog = [];
+  document.getElementById('adminLog').innerHTML = '<div class="log-entry" style="color:var(--text-muted);font-style:italic">Nenhuma alteração registrada ainda.</div>';
+}
+
+// Botão visível na UI para resetar dados (chamado pelo HTML)
+// resetarDados() já está definido no bloco de persistência acima
+
+// ========== CARDS ==========
+function buildCards() {
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  Object.keys(workingData).forEach(reg => {
+    if (HIDDEN_REGS.has(reg)) return;
+    const records = workingData[reg];
+    const n = records.length;
+    const cols = ['pronto_socorro','internacao','ambulatorial2'];
+    const locoTotal  = cols.reduce((s,c) => s + countStatus(records,c,'loco'), 0);
+    const bancoTotal = cols.reduce((s,c) => s + countStatus(records,c,'banco'), 0);
+    const maxVal = Math.max(n * cols.length, 1);
+    const locoPct  = Math.round(locoTotal  / maxVal * 100);
+    const bancoPct = Math.round(bancoTotal / maxVal * 100);
+    const accent = ACCENTS[reg] || '#3b82f6';
+
+    const card = document.createElement('div');
+    card.className = 'card-regional';
+    card.style.setProperty('--card-accent', accent);
+
+    card.innerHTML = `
+      <div class="card-reg-inner">
+        <div class="card-reg-tag">${reg}</div>
+        <div class="card-reg-city">${LABELS[reg] || ''}</div>
+        <div class="card-reg-count">${n} prestador${n !== 1 ? 'es' : ''}</div>
+        <div class="card-reg-bars">
+          <div class="bar-row">
+            <div class="bar-label-wrap">
+              <div class="bar-dot" style="background:#10b981;box-shadow:0 0 5px #10b981"></div>
+              <span class="bar-label-txt" style="color:#10b981">In Loco</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${locoPct}%;background:#10b981;box-shadow:0 0 6px #10b981"></div>
+            </div>
+            <span class="bar-val" style="color:#10b981">${locoTotal}</span>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label-wrap">
+              <div class="bar-dot" style="background:#f59e0b;box-shadow:0 0 5px #f59e0b"></div>
+              <span class="bar-label-txt" style="color:#f59e0b">Banco</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${bancoPct}%;background:#f59e0b;box-shadow:0 0 6px #f59e0b"></div>
+            </div>
+            <span class="bar-val" style="color:#f59e0b">${bancoTotal}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Efeito 3D ao mover o mouse sobre o card
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = (e.clientX - cx) / (rect.width  / 2);
+      const dy = (e.clientY - cy) / (rect.height / 2);
+      card.style.transform = `translateY(-8px) rotateX(${-dy * 6}deg) rotateY(${dx * 6}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+
+    card.onclick = () => openRegional(reg, card);
+    grid.appendChild(card);
+  });
+}
+
+function toggleRegVisibility(reg, visible) {
+  if (visible) {
+    HIDDEN_REGS.delete(reg);
+    addLog('CONFIG', `Card "${reg}" exibido no dashboard`);
+  } else {
+    HIDDEN_REGS.add(reg);
+    addLog('CONFIG', `Card "${reg}" ocultado do dashboard`);
+    if (activeRegional === reg) closePanel();
+  }
+  renderRegVisibilityList();
+  buildCards();
+  persistir();
+  showSaved();
+}
+
+function rebuildCards() { buildCards(); populateEditRegionals(); refreshRegionalSelects(); }
+
+// ========== TABLE ==========
+function statusClass(v) {
+  if (!v || v.trim() === '') return 'pill-vazio';
+  const u = v.toUpperCase();
+  if (u.includes('AUDITADO IN LOCO')) return 'pill-loco';
+  if (u.includes('AUDITAR NO BANCO')) return 'pill-banco';
+  if (u.startsWith('X')) return 'pill-x';
+  if (u === 'SIM') return 'pill-sim';
+  if (u === 'NÃO') return 'pill-nao';
+  return '';
+}
+
+function statusLabel(v, field, reg, idx) {
+  if (!v || v.trim() === '') {
+    if (isAdmin) return `<span class="editable" contenteditable="true" data-reg="${reg}" data-idx="${idx}" data-field="${field}" onblur="saveCell(this)">—</span>`;
+    return '<span class="pill-vazio">—</span>';
+  }
+  const u = v.toUpperCase();
+  const display = u.startsWith('X') ? '–' : v;
+  const cls = statusClass(v);
+  if (isAdmin) {
+    return `<span class="pill ${cls} editable" contenteditable="true" data-reg="${reg}" data-idx="${idx}" data-field="${field}" onblur="saveCell(this)">${display}</span>`;
+  }
+  return `<span class="pill ${cls}">${display}</span>`;
+}
+
+function countStatus(records, key, status) {
+  return records.filter(r => {
+    const u = (r[key] || '').toUpperCase();
+    if (status === 'loco') return u.includes('AUDITADO IN LOCO');
+    if (status === 'banco') return u.includes('AUDITAR NO BANCO');
+    return false;
+  }).length;
+}
+
+function openRegional(reg, cardEl) {
+  const canvas = document.getElementById('shootingStarCanvas');
+  if (canvas.classList.contains('active')) return;
+
+  const accent = ACCENTS[reg] || '#3b82f6';
+  const rect   = cardEl.getBoundingClientRect();
+  const VW     = window.innerWidth;
+  const VH     = window.innerHeight;
+  const TOTAL  = 2000;
+
+  activeRegional = reg;
+  sortField = null; sortDir = 1;
+
+  // Esconde fundo espacial
+  document.getElementById('spaceCanvas').classList.add('hidden');
+
+  // Dimmer nos outros cards
+  document.querySelectorAll('.card-regional').forEach(c => {
+    c.style.transition = 'opacity 0.3s';
+    c.style.opacity    = c === cardEl ? '0' : '0.07';
+  });
+
+  // Canvas
+  const ctx = canvas.getContext('2d');
+  canvas.width  = VW;
+  canvas.height = VH;
+  canvas.classList.add('active');
+
+  // Posição inicial = centro do card clicado
+  const startX = rect.left + rect.width  / 2;
+  const startY = rect.top  + rect.height / 2;
+
+  // Destino = centro da tela
+  const endX = VW / 2;
+  const endY = VH / 2;
+
+  // Converte accent hex → rgb
+  function hexRgb(h) {
+    const c = h.replace('#','');
+    return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)];
+  }
+  const [ar,ag,ab] = hexRgb(accent.startsWith('#') ? accent : '#3b82f6');
+
+  // Partículas da cauda
+  const tailParticles = Array.from({length: 80}, (_, i) => ({
+    offset: i / 80,       // 0 = ponta, 1 = fim da cauda
+    spread: (Math.random() - 0.5) * 18,
+    size:   1 + Math.random() * 2.5,
+    alpha:  0.3 + Math.random() * 0.7,
+    twinkle: Math.random() * Math.PI * 2,
+  }));
+
+  // Faíscas que ficam para trás
+  const sparks = [];
+
+  let startTime = null;
+  const ease = t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+
+  function spawnSpark(x, y, ts) {
+    if (Math.random() > 0.35) return;
+    const angle = Math.atan2(endY - startY, endX - startX) + (Math.random()-0.5)*1.2;
+    const spd   = 1.5 + Math.random() * 3;
+    sparks.push({ x, y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd,
+                  life: 1, decay: 0.025 + Math.random()*0.04,
+                  r: 1 + Math.random()*2 });
+  }
+
+  function drawFrame(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+    const t  = Math.min(elapsed / TOTAL, 1);
+    const et = ease(t);
+
+    ctx.clearRect(0, 0, VW, VH);
+
+    // Fundo escurecido suave
+    ctx.fillStyle = `rgba(2,6,14,${Math.min(t * 3, 0.82)})`;
+    ctx.fillRect(0, 0, VW, VH);
+
+    // Posição atual da estrela
+    const sx = startX + (endX - startX) * et;
+    const sy = startY + (endY - startY) * et;
+
+    // Ângulo da trajetória
+    const angle = Math.atan2(endY - startY, endX - startX);
+    const perpX = -Math.sin(angle);
+    const perpY =  Math.cos(angle);
+
+    // Comprimento da cauda cresce com a velocidade
+    const tailLen = 220 + et * 180;
+
+    // ── Cauda principal (gradiente linear) ──────────────────────────────
+    const tailStartX = sx - Math.cos(angle) * tailLen;
+    const tailStartY = sy - Math.sin(angle) * tailLen;
+
+    const grad = ctx.createLinearGradient(tailStartX, tailStartY, sx, sy);
+    grad.addColorStop(0,    'rgba(0,0,0,0)');
+    grad.addColorStop(0.5,  `rgba(${ar},${ag},${ab},0.12)`);
+    grad.addColorStop(0.82, `rgba(${ar},${ag},${ab},0.55)`);
+    grad.addColorStop(1,    `rgba(255,255,255,0.95)`);
+
+    ctx.save();
+    ctx.beginPath();
+    // Cauda como trapézio suave
+    const tipW  = 1.5;
+    const baseW = 14;
+    ctx.moveTo(tailStartX + perpX*tipW,  tailStartY + perpY*tipW);
+    ctx.lineTo(tailStartX - perpX*tipW,  tailStartY - perpY*tipW);
+    ctx.lineTo(sx - perpX*baseW, sy - perpY*baseW);
+    ctx.lineTo(sx + perpX*baseW, sy + perpY*baseW);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+
+    // ── Cauda secundária (mais fina, brilhante) ──────────────────────────
+    const grad2 = ctx.createLinearGradient(tailStartX, tailStartY, sx, sy);
+    grad2.addColorStop(0,   'rgba(0,0,0,0)');
+    grad2.addColorStop(0.7, `rgba(${ar},${ag},${ab},0.3)`);
+    grad2.addColorStop(1,   'rgba(255,255,255,1)');
+    ctx.beginPath();
+    ctx.moveTo(tailStartX, tailStartY);
+    ctx.lineTo(sx, sy);
+    ctx.strokeStyle = grad2;
+    ctx.lineWidth   = 2.5;
+    ctx.stroke();
+
+    // ── Partículas na cauda ──────────────────────────────────────────────
+    for (const p of tailParticles) {
+      const px = sx - Math.cos(angle) * tailLen * p.offset + perpX * p.spread;
+      const py = sy - Math.sin(angle) * tailLen * p.offset + perpY * p.spread;
+      const fade = 1 - p.offset;
+      const twink = 0.6 + 0.4 * Math.sin(ts * 0.008 + p.twinkle);
+      ctx.beginPath();
+      ctx.arc(px, py, p.size * fade, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${ar},${ag},${ab},${p.alpha * fade * twink * Math.min(t*4,1)})`;
+      ctx.fill();
+    }
+
+    // ── Brilho da ponta (estrela) ────────────────────────────────────────
+    const glowR = 28 + Math.sin(ts*0.015)*6;
+    const glow  = ctx.createRadialGradient(sx,sy,0, sx,sy,glowR);
+    glow.addColorStop(0,    `rgba(255,255,255,${0.95 * Math.min(t*4,1)})`);
+    glow.addColorStop(0.25, `rgba(${ar},${ag},${ab},${0.7 * Math.min(t*4,1)})`);
+    glow.addColorStop(1,    'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(sx, sy, glowR, 0, Math.PI*2);
+    ctx.fill();
+
+    // Núcleo branco brilhante
+    ctx.beginPath();
+    ctx.arc(sx, sy, 4 + Math.sin(ts*0.02)*1.5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(t*5,1)})`;
+    ctx.fill();
+
+    // ── Faíscas ──────────────────────────────────────────────────────────
+    spawnSpark(sx, sy, ts);
+    for (let i = sparks.length-1; i >= 0; i--) {
+      const sp = sparks[i];
+      sp.x += sp.vx; sp.y += sp.vy;
+      sp.vy += 0.08; // leve gravidade
+      sp.life -= sp.decay;
+      if (sp.life <= 0) { sparks.splice(i,1); continue; }
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, sp.r * sp.life, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${ar},${ag},${ab},${sp.life * 0.8})`;
+      ctx.fill();
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(drawFrame);
+    } else {
+      // Flash e abre painel
+      const flash = document.getElementById('starFlash');
+      flash.style.transition = 'opacity 0.06s ease-in';
+      flash.style.opacity = '0.9';
+      setTimeout(() => {
+        flash.style.transition = 'opacity 0.4s ease-out';
+        flash.style.opacity    = '0';
+
+        canvas.classList.remove('active');
+        ctx.clearRect(0,0,VW,VH);
+
+        document.querySelectorAll('.card-regional').forEach(c => {
+          c.style.opacity = '1'; c.style.transition = 'opacity 0.4s';
+        });
+        document.querySelectorAll('.card-regional').forEach(c => c.classList.remove('active'));
+        cardEl.classList.add('active');
+
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterCol').value   = '';
+        document.getElementById('filterVal').value   = '';
+        document.getElementById('filterVal').style.display = 'none';
+        document.getElementById('panelTitle').textContent  = `${reg} — ${LABELS[reg] || ''}`;
+        document.getElementById('panelTitle').style.color  = accent;
+        document.getElementById('panelBadge').style.background = accent;
+        const panel = document.getElementById('tablePanel');
+        panel.classList.add('visible');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        renderTable();
+      }, 60);
+    }
+  }
+
+  requestAnimationFrame(drawFrame);
+}
+
+function closePanel() {
+  document.getElementById('tablePanel').classList.remove('visible');
+  document.querySelectorAll('.card-regional').forEach(c => c.classList.remove('active'));
+  activeRegional = null;
+}
+
+function getStatusGroup(v) {
+  const u = (v || '').toUpperCase();
+  if (u.includes('AUDITADO IN LOCO')) return 'AUDITADO IN LOCO';
+  if (u.includes('AUDITAR NO BANCO')) return 'AUDITAR NO BANCO';
+  if (u.startsWith('X')) return 'X';
+  if (u === 'SIM') return 'SIM';
+  if (u === 'NÃO') return 'NÃO';
+  return '';
+}
+
+function onFilterColChange() {
+  const fCol = document.getElementById('filterCol').value;
+  const fValSel = document.getElementById('filterVal');
+
+  if (!fCol) {
+    fValSel.style.display = 'none';
+    fValSel.value = '';
+    renderTable();
+    return;
+  }
+
+  // Collect unique status values from the active regional for this column
+  const values = new Set();
+  if (activeRegional) {
+    workingData[activeRegional].forEach(r => {
+      const g = getStatusGroup(r[fCol]);
+      if (g) values.add(g);
+    });
+  }
+
+  const ORDER = ['AUDITADO IN LOCO', 'AUDITAR NO BANCO', 'X', 'SIM', 'NÃO'];
+  const DISPLAY = {
+    'AUDITADO IN LOCO': 'Auditado In Loco',
+    'AUDITAR NO BANCO': 'Auditar no Banco',
+    'X': '–',
+    'SIM': 'SIM',
+    'NÃO': 'NÃO'
+  };
+
+  const sorted = ORDER.filter(v => values.has(v));
+  fValSel.innerHTML = '<option value="">Todos os status</option>' +
+    sorted.map(v => `<option value="${v}">${DISPLAY[v]}</option>`).join('');
+  fValSel.value = '';
+  fValSel.style.display = '';
+  renderTable();
+}
+
+function renderTable() {
+  if (!activeRegional) return;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const fCol = document.getElementById('filterCol').value;
+  const fVal = document.getElementById('filterVal').value;
+  let rows = workingData[activeRegional].map((r, i) => ({ ...r, _idx: i }));
+  if (search) rows = rows.filter(r => r.prestador.toLowerCase().includes(search) || r.cnpj.includes(search));
+  if (fCol && fVal) rows = rows.filter(r => {
+    const g = getStatusGroup(r[fCol]);
+    return fVal === 'X' ? g === 'X' : g === fVal;
+  });
+  if (sortField) rows.sort((a, b) => {
+    const av = (a[sortField] || '').toLowerCase(), bv = (b[sortField] || '').toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+  document.getElementById('panelBadge').textContent = rows.length;
+  document.getElementById('resultsCount').textContent = `${rows.length} de ${workingData[activeRegional].length} registros`;
+
+  const reg = activeRegional;
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = rows.map(r => {
+    const i = r._idx;
+    const namecell = isAdmin
+      ? `<span class="editable" contenteditable="true" data-reg="${reg}" data-idx="${i}" data-field="prestador" onblur="saveCell(this)">${r.prestador}</span>`
+      : r.prestador;
+    const cnpjcell = isAdmin
+      ? `<span class="editable" contenteditable="true" data-reg="${reg}" data-idx="${i}" data-field="cnpj" onblur="saveCell(this)">${r.cnpj}</span>`
+      : r.cnpj;
+    const pegcell = isAdmin
+      ? `<span class="editable" contenteditable="true" data-reg="${reg}" data-idx="${i}" data-field="peg" onblur="saveCell(this)">${r.peg || ''}</span>`
+      : (r.peg || '—');
+    return `<tr>
+      <td class="td-prestador">${namecell}</td>
+      <td class="td-cnpj">${cnjcell(cnpjcell)}</td>
+      <td>${statusLabel(r.pronto_socorro,'pronto_socorro',reg,i)}</td>
+      <td>${statusLabel(r.internacao,'internacao',reg,i)}</td>
+      <td>${statusLabel(r.ambulatorial2,'ambulatorial2',reg,i)}</td>
+      <td>${statusLabel(r.fisioterapia,'fisioterapia',reg,i)}</td>
+      <td class="td-peg">${pegcell}</td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc','sort-desc'));
+}
+
+function cnjcell(v) { return `<span style="color:var(--text-muted);font-family:monospace;font-size:11.5px">${v}</span>`; }
+
+function saveCell(el) {
+  const reg = el.dataset.reg, idx = parseInt(el.dataset.idx), field = el.dataset.field;
+  const val = el.textContent.trim() === '—' ? '' : el.textContent.trim();
+  const old = workingData[reg][idx][field];
+  workingData[reg][idx][field] = val;
+  if (old !== val) {
+    addLog('EDITAR INLINE', `${field} de "${workingData[reg][idx].prestador}" alterado para "${val}"`);
+    persistir();
+    showSaved();
+    if (field === 'prestador' || field === 'cnpj') populateEditRegionals();
+  }
+}
+
+function sortBy(field) {
+  if (sortField === field) sortDir *= -1; else { sortField = field; sortDir = 1; }
+  const cols = ['prestador','cnpj','pronto_socorro','internacao','ambulatorial2','fisioterapia','peg'];
+  const idx = cols.indexOf(field);
+  const ths = document.querySelectorAll('thead th');
+  if (ths[idx]) ths[idx].classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+  renderTable();
+}
+
+function showSaved() {
+  const el = document.getElementById('saveIndicator');
+  el.style.display = 'block';
+  clearTimeout(window._saveTimer);
+  window._saveTimer = setTimeout(() => { el.style.display = 'none'; }, 2000);
+}
+
+// Carrega estado: tenta Firebase primeiro, fallback localStorage
+(async function init() {
+  // 1) Carrega o localStorage PRIMEIRO (traz dados locais + _localUpdatedAt)
+  const temLocal = carregarEstado();
+  // Se há dados locais sem timestamp (versão antiga), assume agora como marca
+  if (temLocal && !window._localUpdatedAt) window._localUpdatedAt = 0;
+
+  // 2) Tenta o Firebase (a proteção de timestamp decide quem prevalece)
+  const ok = await carregarFirebase();
+  if (!ok) {
+    setFonteBadge('local');
+    // Se há mudança local não publicada e o Firebase está fora, agenda retry
+    if (window._pendingPublish) { clearTimeout(_retryTimer); _retryTimer = setTimeout(publicarFirebase, 5000); }
+  }
+
+  buildCards();
+  refreshRegionalSelects();   // garante que os selects reflitam as regionais carregadas
+  iniciarPollingFirebase();
+  // Sempre inicia com painel fechado e sem regional ativa
+  document.getElementById('tablePanel').classList.remove('visible');
+  activeRegional = null;
+})();
+
+// ===== SPACE BACKGROUND =====
+(function initSpace() {
+  const canvas = document.getElementById('spaceCanvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, stars, nebulae, shooters, dust;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildScene();
+  }
+
+  function rand(a, b)   { return a + Math.random() * (b - a); }
+  function randInt(a, b) { return Math.floor(rand(a, b + 1)); }
+
+  function buildScene() {
+    // Estrelas: tamanhos e brilhos variados
+    stars = Array.from({ length: 280 }, () => ({
+      x:     rand(0, W),
+      y:     rand(0, H),
+      r:     rand(0.3, 2.2),
+      base:  rand(0.25, 1),
+      phase: rand(0, Math.PI * 2),
+      speed: rand(0.0004, 0.0018),
+      color: Math.random() < 0.12
+        ? `hsl(${randInt(200,260)},80%,85%)`   // azuladas
+        : Math.random() < 0.08
+          ? `hsl(${randInt(30,60)},90%,85%)`   // douradas
+          : '#fff',
+    }));
+
+    // Nebulosas: manchas difusas de cor
+    nebulae = [
+      { x: rand(0.05,0.3)*W, y: rand(0.05,0.4)*H, rx: rand(180,320), ry: rand(120,220), hue: 220, alpha: 0.045 },
+      { x: rand(0.5,0.9)*W,  y: rand(0.1,0.5)*H,  rx: rand(200,360), ry: rand(130,250), hue: 260, alpha: 0.04  },
+      { x: rand(0.1,0.5)*W,  y: rand(0.55,0.95)*H,rx: rand(160,280), ry: rand(100,200), hue: 190, alpha: 0.035 },
+      { x: rand(0.6,0.95)*W, y: rand(0.5,0.9)*H,  rx: rand(140,240), ry: rand(90,170),  hue: 300, alpha: 0.03  },
+    ];
+
+    // Estrelas cadentes
+    shooters = [];
+
+    // Poeira cósmica: partículas minúsculas em drift lento
+    dust = Array.from({ length: 60 }, () => ({
+      x:  rand(0, W), y: rand(0, H),
+      vx: rand(-0.06, 0.06), vy: rand(-0.04, 0.04),
+      r:  rand(0.4, 1.1),
+      alpha: rand(0.06, 0.2),
+      hue: randInt(200, 280),
+    }));
+  }
+
+  // Dispara uma estrela cadente aleatória
+  function spawnShooter() {
+    const startX = rand(W * 0.1, W * 0.9);
+    const startY = rand(0, H * 0.4);
+    const angle  = rand(Math.PI * 0.1, Math.PI * 0.35);
+    const speed  = rand(6, 12);
+    shooters.push({
+      x: startX, y: startY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      len:   rand(60, 140),
+      alpha: 1,
+      life:  1,
+    });
+  }
+
+  // Agenda próxima estrela cadente
+  function scheduleShooter() {
+    setTimeout(() => {
+      spawnShooter();
+      scheduleShooter();
+    }, rand(400, 1200));
+  }
+
+  function draw(ts) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Fundo: gradiente profundo de espaço
+    const bg = ctx.createRadialGradient(W*0.4, H*0.35, 0, W*0.5, H*0.5, Math.max(W,H)*0.8);
+    bg.addColorStop(0,   '#0d1b2e');
+    bg.addColorStop(0.45,'#060c18');
+    bg.addColorStop(1,   '#020408');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Nebulosas
+    for (const n of nebulae) {
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.scale(n.rx / 100, n.ry / 100);
+      const g = ctx.createRadialGradient(0,0,0, 0,0,100);
+      g.addColorStop(0,   `hsla(${n.hue},70%,60%,${n.alpha})`);
+      g.addColorStop(0.5, `hsla(${n.hue},60%,40%,${n.alpha * 0.4})`);
+      g.addColorStop(1,   'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, 100, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Poeira cósmica
+    for (const d of dust) {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0) d.x = W; if (d.x > W) d.x = 0;
+      if (d.y < 0) d.y = H; if (d.y > H) d.y = 0;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${d.hue},70%,80%,${d.alpha})`;
+      ctx.fill();
+    }
+
+    // Estrelas com cintilação
+    for (const s of stars) {
+      const flicker = s.base * (0.5 + 0.5 * Math.sin(ts * s.speed + s.phase));
+      // Halo para estrelas grandes
+      if (s.r > 1.4) {
+        const halo = ctx.createRadialGradient(s.x,s.y,0, s.x,s.y,s.r*5);
+        halo.addColorStop(0,   `rgba(255,255,255,${flicker * 0.25})`);
+        halo.addColorStop(1,   'transparent');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = flicker;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Estrelas cadentes
+    for (let i = shooters.length - 1; i >= 0; i--) {
+      const s = shooters[i];
+      s.x += s.vx; s.y += s.vy;
+      s.life -= 0.018;
+      s.alpha = s.life;
+      if (s.life <= 0 || s.x > W + 50 || s.y > H + 50) { shooters.splice(i, 1); continue; }
+
+      const tailX = s.x - s.vx / Math.sqrt(s.vx*s.vx+s.vy*s.vy) * s.len;
+      const tailY = s.y - s.vy / Math.sqrt(s.vx*s.vx+s.vy*s.vy) * s.len;
+      const grad = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
+      grad.addColorStop(0,   'transparent');
+      grad.addColorStop(0.7, `rgba(180,210,255,${s.alpha * 0.4})`);
+      grad.addColorStop(1,   `rgba(255,255,255,${s.alpha})`);
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth   = 1.5;
+      ctx.stroke();
+
+      // Brilho na ponta
+      const glow = ctx.createRadialGradient(s.x,s.y,0, s.x,s.y,6);
+      glow.addColorStop(0,   `rgba(255,255,255,${s.alpha})`);
+      glow.addColorStop(1,   'transparent');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  // Esconde canvas quando painel de tabela abre, mostra quando fecha
+  const origOpen  = window._spaceOpenHook  = () => document.getElementById('spaceCanvas').classList.add('hidden');
+  const origClose = window._spaceCloseHook = () => document.getElementById('spaceCanvas').classList.remove('hidden');
+
+  // Intercepta openRegional e closePanel para esconder/mostrar
+  const _origClose = closePanel;
+  closePanel = function() { _origClose(); origClose(); };
+
+  window.addEventListener('resize', resize);
+  resize();
+  scheduleShooter();
+  requestAnimationFrame(draw);
+})();
+</script>
+
+<!-- SHOOTING STAR ELEMENTS -->
+<canvas id="shootingStarCanvas"></canvas>
+<div class="star-flash" id="starFlash"></div>
+
+</body></html>
